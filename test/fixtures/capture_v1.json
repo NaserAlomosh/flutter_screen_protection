@@ -1,0 +1,149 @@
+{
+  "initial": {
+    "version": 1,
+    "session": 1,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "uid",
+    "status": "inactive",
+    "capabilities": {
+      "platform": "android",
+      "screenshots": {
+        "support": "supported",
+        "scope": "activity"
+      },
+      "continuousCapture": {
+        "support": "supported",
+        "scope": "uid"
+      }
+    }
+  },
+  "initialActive": {
+    "version": 1,
+    "session": 1,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "uid",
+    "status": "active",
+    "capabilities": {
+      "platform": "android",
+      "screenshots": {
+        "support": "supported",
+        "scope": "activity"
+      },
+      "continuousCapture": {
+        "support": "supported",
+        "scope": "uid"
+      }
+    }
+  },
+  "screenshot": {
+    "version": 1,
+    "session": 1,
+    "sequence": 1,
+    "kind": "screenshotTaken",
+    "timestampMs": 1700000000001,
+    "scope": "activity"
+  },
+  "started": {
+    "version": 1,
+    "session": 1,
+    "sequence": 2,
+    "kind": "captureStarted",
+    "timestampMs": 1700000000002,
+    "scope": "uid"
+  },
+  "stopped": {
+    "version": 1,
+    "session": 1,
+    "sequence": 3,
+    "kind": "captureStopped",
+    "timestampMs": 1700000000003,
+    "scope": "uid"
+  },
+  "invalidated": {
+    "version": 1,
+    "session": 1,
+    "sequence": 4,
+    "kind": "invalidated",
+    "timestampMs": 1700000000004,
+    "scope": "uid",
+    "reason": "backgrounded"
+  },
+  "resumed": {
+    "version": 1,
+    "session": 2,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "uid",
+    "status": "active",
+    "capabilities": {
+      "platform": "android",
+      "screenshots": {
+        "support": "supported",
+        "scope": "activity"
+      },
+      "continuousCapture": {
+        "support": "supported",
+        "scope": "uid"
+      }
+    }
+  },
+  "error": {
+    "version": 1,
+    "session": 2,
+    "sequence": 1,
+    "kind": "error",
+    "timestampMs": 1700000000001,
+    "scope": "uid",
+    "reason": "registrationFailed"
+  },
+  "unsupported": {
+    "version": 1,
+    "session": 1,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "unknown",
+    "status": "unsupported",
+    "reason": "unsupportedOs",
+    "capabilities": {
+      "platform": "android",
+      "screenshots": {
+        "support": "supported",
+        "scope": "activity"
+      },
+      "continuousCapture": {
+        "support": "unavailable",
+        "scope": "unknown",
+        "reason": "unsupportedOs"
+      }
+    }
+  },
+  "unknown": {
+    "version": 1,
+    "session": 1,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "unknown",
+    "status": "unknown",
+    "reason": "ambiguousHost",
+    "capabilities": {
+      "platform": "ios",
+      "screenshots": {
+        "support": "temporarilyUnavailable",
+        "scope": "unknown",
+        "reason": "ambiguousHost"
+      },
+      "continuousCapture": {
+        "support": "temporarilyUnavailable",
+        "scope": "unknown",
+        "reason": "ambiguousHost"
+      }
+    }
+  }
+}

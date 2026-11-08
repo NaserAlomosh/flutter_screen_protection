@@ -2,7 +2,7 @@
 
 An Android and iOS Flutter plugin project for privacy-sensitive screens in banking, fintech, and other apps. The goal is to help apps respond to capture signals and hide selected fields while keeping the rest of the interface usable.
 
-**Development status:** The current `0.0.1` scaffold exposes `getPlatformVersion()`. Capture events, widget protection, and window privacy are planned and pending design review.
+**Development status** — The `0.0.1` project includes the Dart capture contracts, channel adapter, controller, and `getPlatformVersion()`. Native capture detection, widget rendering, and window privacy remain planned.
 
 | Planned capability | Android | iOS |
 | --- | --- | --- |
@@ -13,28 +13,9 @@ An Android and iOS Flutter plugin project for privacy-sensitive screens in banki
 
 Screenshot notifications arrive after capture. Reactive masking can take effect only after the signal reaches Flutter and a frame renders. Blur can leave data recognizable. Apps that need to keep a value out of captured output should keep it off the screen or use a separately validated platform control where available. See [security limitations](docs/SECURITY_LIMITATIONS.md).
 
-## Planned API
+## Dart capture API
 
-The following sketch is for design review.
-
-```dart
-final controller = FlutterScreenProtectionController();
-await controller.initialize();
-
-final subscription = controller.captureEvents.listen((event) {
-  if (event is ScreenshotTaken) {
-    // Show an informational message.
-  }
-});
-
-final field = SensitiveContent(
-  controller: controller,
-  protection: SensitiveProtection.mask,
-  child: const Text('12,450.75 JOD'),
-);
-
-// The owner cancels its subscription and disposes the controller on teardown.
-```
+`FlutterScreenProtectionController` exposes current capture state, independent screenshot and continuous-capture capabilities, and a broadcast stream of typed events. The controller starts in `CaptureStatus.unknown` and uses an ordered snapshot to synchronize with the future Android and iOS adapters. Capture behavior can currently be exercised with the test fake. See the [API design](docs/API_DESIGN.md) for the public contracts and native wire protocol.
 
 ## Project documentation
 
