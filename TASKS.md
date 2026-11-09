@@ -5,7 +5,7 @@ P0 gates implementation or release. P1 is core scope. P2 is optional. Status voc
 | ID | Priority | Status | Depends on | Deliverable |
 | --- | --- | --- | --- | --- |
 | FSP-000 | P0 | DONE | None | Audit scaffold and write review drafts. |
-| FSP-010 | P0 | BLOCKED | FSP-000 | Phase 1 core decisions approved. ADR-007 still requires minimum/current toolchain build evidence and approval of exact Flutter/Dart and native platform floors. |
+| FSP-010 | P0 | BLOCKED | FSP-000 | Phase 1 core decisions approved. [ADR-007](docs/DECISION_REGISTER.md) approved and applied. Android API 29 runtime qualification passed on Flutter 3.35.4 and 3.47.7. iOS 15 runtime evidence and Flutter 3.47.9 native checks remain open. See the [evidence and gaps](docs/PLATFORM_COMPATIBILITY.md#remaining-qualification). |
 | FSP-001 | P0 | DONE | FSP-010 core approvals | Define typed events, state, capability reasons, errors and shared wire fixtures. Preserve version lookup. |
 | FSP-006 | P0 | DONE | FSP-001 | Build controller and fake platform. Test snapshot ordering, lifecycle invalidation, retry and disposal. |
 | FSP-002 | P1 | TODO | FSP-001 | Bind Android Activity and implement screenshot callback with API and permission checks. |
