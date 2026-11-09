@@ -212,6 +212,14 @@ internal class AndroidScreenshotTest {
         callback.onScreenCaptured()
         engine.cancel()
         assertEquals(listOf("snapshot"), engine.kinds())
+
+        engine.failSend = false
+        engine.listen()
+        callback.onScreenCaptured()
+        host.callback(count = 2).onScreenCaptured()
+        assertEquals(listOf("snapshot", "snapshot", "screenshotTaken"), engine.kinds())
+        assertEquals(listOf(1L, 2L, 2L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 0L, 1L), engine.packets.map { it["sequence"] })
     }
 
     @Test
@@ -229,15 +237,142 @@ internal class AndroidScreenshotTest {
         assertEquals(listOf("snapshot", "screenshotTaken"), engine.kinds())
     }
 
-    private class TestHost(startedOnAttach: Boolean = false) {
+    @Test
+    fun cancellationDuringRegistrationRollsBackWithoutPublishingASnapshot() {
+        val engine = Engine()
+        val host = TestHost(startedOnAttach = true)
+        engine.plugin.onAttachedToActivity(host.binding)
+        host.onRegister = {
+            host.onRegister = null
+            engine.cancel()
+        }
+
+        engine.listen()
+        val abandoned = host.callback()
+        verify(host.activity).unregisterScreenCaptureCallback(abandoned)
+        abandoned.onScreenCaptured()
+        assertTrue(engine.packets.isEmpty())
+
+        engine.listen()
+        val current = host.callback(count = 2)
+        current.onScreenCaptured()
+        current.onScreenCaptured()
+        assertEquals(listOf("snapshot", "screenshotTaken", "screenshotTaken"), engine.kinds())
+        assertEquals(listOf(2L, 2L, 2L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 1L, 2L), engine.packets.map { it["sequence"] })
+    }
+
+    @Test
+    fun reentrantStopAndStartWaitForRegistrationRollback() {
+        val engine = Engine()
+        val host = TestHost(startedOnAttach = true)
+        engine.plugin.onAttachedToActivity(host.binding)
+        host.onRegister = {
+            host.onRegister = {
+                verify(host.activity).unregisterScreenCaptureCallback(host.callbacks.first())
+            }
+            host.observer().onStop(host.owner)
+            host.start()
+        }
+
+        engine.listen()
+        val current = host.callback(count = 2)
+        host.callbacks.first().onScreenCaptured()
+        current.onScreenCaptured()
+        assertEquals(listOf("snapshot", "screenshotTaken"), engine.kinds())
+        assertEquals(listOf(2L, 2L), engine.packets.map { it["session"] })
+        engine.cancel()
+        verify(host.activity).unregisterScreenCaptureCallback(current)
+    }
+
+    @Test
+    fun reentrantStartWaitsForPreviousCallbackRemoval() {
+        val engine = Engine()
+        val host = TestHost(startedOnAttach = true)
+        engine.plugin.onAttachedToActivity(host.binding)
+        engine.listen()
+        val previous = host.callback()
+        doAnswer {
+            host.start()
+            previous.onScreenCaptured()
+            assertEquals(1, host.callbacks.size)
+            null
+        }.`when`(host.activity).unregisterScreenCaptureCallback(previous)
+
+        host.observer().onStop(host.owner)
+        host.callback(count = 2).onScreenCaptured()
+        assertEquals(listOf("snapshot", "invalidated", "snapshot", "screenshotTaken"), engine.kinds())
+        assertEquals(listOf(1L, 1L, 2L, 2L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 1L, 0L, 1L), engine.packets.map { it["sequence"] })
+    }
+
+    @Test
+    fun queuedCommandsAndCallbacksFromDetachedEngineCannotAffectReplacement() {
+        val original = Engine()
+        val queuedCallbacks = ArrayDeque<Runnable>()
+        val oldHost = TestHost(startedOnAttach = true, executor = Executor(queuedCallbacks::addLast))
+        original.plugin.onAttachedToActivity(oldHost.binding)
+        original.listen()
+        val callback = oldHost.callback()
+        oldHost.executor.execute(callback::onScreenCaptured)
+        val queuedHandler = original.eventHandler()
+        original.plugin.onDetachedFromEngine(original.binding)
+        verify(oldHost.activity).unregisterScreenCaptureCallback(callback)
+
+        val replacement = Engine(existingPlugin = original.plugin)
+        val newHost = TestHost(startedOnAttach = true)
+        replacement.plugin.onAttachedToActivity(newHost.binding)
+        replacement.listen()
+        assertNull(original.call("cancel", mapOf("version" to 1), handler = queuedHandler))
+        assertNull(original.call("listen", mapOf("version" to 1), handler = queuedHandler))
+
+        queuedCallbacks.removeFirst().run()
+        newHost.callback().onScreenCaptured()
+        assertEquals(listOf("snapshot", "invalidated"), original.kinds())
+        assertEquals(listOf("snapshot", "screenshotTaken"), replacement.kinds())
+    }
+
+    @Test
+    fun aNewPluginInstanceKeepsGenerationsIncreasingOnTheSameEngine() {
+        val engine = Engine()
+        engine.listen()
+        engine.plugin.onDetachedFromEngine(engine.binding)
+
+        val replacement = FlutterScreenProtectionPlugin({ 34 }, { 1700000000001L })
+        replacement.onAttachedToEngine(engine.binding)
+        engine.listen()
+        assertEquals(listOf(1L, 2L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 0L), engine.packets.map { it["sequence"] })
+    }
+
+    @Test
+    fun observerCleanupIsIdempotentWhenAndroidRemovalThrows() {
+        val host = TestHost()
+        var deliveries = 0
+        val cleanup = Api34ScreenshotObserver.register(host.activity) { deliveries++ }
+        val callback = host.callback()
+        callback.onScreenCaptured()
+        doThrow(IllegalStateException()).`when`(host.activity).unregisterScreenCaptureCallback(callback)
+        cleanup()
+        cleanup()
+        callback.onScreenCaptured()
+        verify(host.activity).unregisterScreenCaptureCallback(callback)
+        assertEquals(1, deliveries)
+    }
+
+    private class TestHost(
+        startedOnAttach: Boolean = false,
+        val executor: Executor = Executor { it.run() },
+    ) {
         val owner = mock(LifecycleOwner::class.java)
-        val executor = Executor { it.run() }
         val callbacks = mutableListOf<Activity.ScreenCaptureCallback>()
         var registrationError: RuntimeException? = null
+        var onRegister: (() -> Unit)? = null
         val activity = mock(Activity::class.java) { invocation ->
             if (invocation.method.name == "registerScreenCaptureCallback") {
                 assertSame(executor, invocation.getArgument(0))
                 callbacks.add(invocation.getArgument(1))
+                onRegister?.invoke()
                 registrationError?.let { throw it }
             }
             RETURNS_DEFAULTS.answer(invocation)
@@ -271,9 +406,9 @@ internal class AndroidScreenshotTest {
         }
     }
 
-    private class Engine(sdk: Int = 34) {
+    private class Engine(sdk: Int = 34, existingPlugin: FlutterScreenProtectionPlugin? = null) {
         private var clock = 1700000000000L
-        val plugin = FlutterScreenProtectionPlugin({ sdk }, { clock++ })
+        val plugin = existingPlugin ?: FlutterScreenProtectionPlugin({ sdk }, { clock++ })
         val binding = mock(FlutterPlugin.FlutterPluginBinding::class.java)
         val handlers = mutableMapOf<String, BinaryMessenger.BinaryMessageHandler>()
         val packets = mutableListOf<Map<*, *>>()
@@ -310,6 +445,8 @@ internal class AndroidScreenshotTest {
             plugin.onAttachedToEngine(binding)
         }
 
+        fun eventHandler() = handlers.getValue(eventChannel)
+
         fun listen() = assertNull(call("listen", version, recordAcknowledgement = true))
         fun cancel() = assertNull(call("cancel", version))
         fun kinds() = packets.map { it["kind"] }
@@ -325,14 +462,18 @@ internal class AndroidScreenshotTest {
             arguments: Any?,
             recordAcknowledgement: Boolean = false,
             channel: String = eventChannel,
+            handler: BinaryMessenger.BinaryMessageHandler = handlers.getValue(channel),
         ): Any? {
+            var replied = false
             var reply: ByteBuffer? = null
             val request = codec.encodeMethodCall(MethodCall(method, arguments)).readable()
-            handlers.getValue(channel).onMessage(request) {
+            handler.onMessage(request) {
                 if (recordAcknowledgement) order.add(method)
+                replied = true
                 reply = it
             }
-            return codec.decodeEnvelope(checkNotNull(reply).readable())
+            assertTrue(replied)
+            return reply?.let { codec.decodeEnvelope(it.readable()) }
         }
 
         fun assertFixture(name: String, index: Int) {

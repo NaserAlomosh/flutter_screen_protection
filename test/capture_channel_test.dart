@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -200,6 +201,121 @@ void main() {
     expect(controller.state.value.reason, CaptureReason.protocolFailure);
     expect(controller.state.value.status, CaptureStatus.unknown);
   });
+
+  for (final (label, envelope, reason) in [
+    (
+      'channel error',
+      codec.encodeErrorEnvelope(code: 'native_failure'),
+      CaptureReason.transportFailure,
+    ),
+    ('malformed envelope', ByteData(0), CaptureReason.protocolFailure),
+    ('stream end', null, CaptureReason.transportFailure),
+  ]) {
+    test('$label retires a paused stream and allows a fresh listen', () async {
+      final calls = <String>[];
+      final packets = <Object?>[];
+      final errors = <Object>[];
+      final done = Completer<void>();
+      final firstPacket = Completer<void>();
+      final relistening = Completer<void>();
+      messenger.setMockMethodCallHandler(events, (call) async {
+        calls.add(call.method);
+        if (calls.length == 3 && call.method == 'listen') {
+          relistening.complete();
+        }
+        return null;
+      });
+
+      const platform = ChannelCapturePlatform();
+      final first = platform.observeCapture().listen(
+        (packet) {
+          packets.add(packet);
+          if (!firstPacket.isCompleted) firstPacket.complete();
+        },
+        onError: errors.add,
+        onDone: done.complete,
+      );
+      addTearDown(first.cancel);
+      await deliver(codec.encodeSuccessEnvelope(packet('unsupported')));
+      await firstPacket.future;
+      first.pause();
+      await deliver(envelope);
+      expect(calls, ['listen', 'cancel']);
+
+      await deliver(codec.encodeSuccessEnvelope(packet('screenshot')));
+      first.resume();
+      await done.future;
+      expect(packets, [packet('unsupported')]);
+      expect(
+        errors.single,
+        isA<CaptureException>().having(
+          (error) => error.reason,
+          'reason',
+          reason,
+        ),
+      );
+
+      final controller = FlutterScreenProtectionController();
+      addTearDown(controller.dispose);
+      final ready = controller.initialize();
+      await relistening.future;
+      await deliver(
+        codec.encodeSuccessEnvelope({...packet('unsupported'), 'session': 2}),
+      );
+      await ready;
+      expect(controller.state.value.status, CaptureStatus.unsupported);
+      await controller.dispose();
+      expect(calls, ['listen', 'cancel', 'listen', 'cancel']);
+    });
+  }
+
+  test(
+    'an in-flight screenshot during cancellation cannot poison a new owner',
+    () async {
+      final cancelStarted = Completer<void>();
+      final cancelAck = Completer<void>();
+      final firstListen = Completer<void>();
+      final secondListen = Completer<void>();
+      messenger.setMockMethodCallHandler(events, (call) async {
+        if (call.method == 'listen') {
+          (firstListen.isCompleted ? secondListen : firstListen).complete();
+        } else if (!cancelStarted.isCompleted) {
+          cancelStarted.complete();
+          await cancelAck.future;
+        }
+        return null;
+      });
+      final original = FlutterScreenProtectionController();
+      addTearDown(original.dispose);
+      final initial = original.initialize();
+      await firstListen.future;
+      await deliver(codec.encodeSuccessEnvelope(packet('unsupported')));
+      await initial;
+
+      final disposal = original.dispose();
+      await cancelStarted.future;
+      final staleReply = Completer<void>();
+      ui.channelBuffers.push(
+        events.name,
+        codec.encodeSuccessEnvelope(packet('screenshot')),
+        (_) => staleReply.complete(),
+      );
+      cancelAck.complete();
+      await disposal;
+
+      final replacement = FlutterScreenProtectionController();
+      addTearDown(replacement.dispose);
+      final ready = replacement.initialize();
+      final success = expectLater(ready, completes);
+      await secondListen.future;
+      await staleReply.future;
+      await deliver(
+        codec.encodeSuccessEnvelope({...packet('unsupported'), 'session': 2}),
+      );
+      await success;
+      expect(replacement.state.value.status, CaptureStatus.unsupported);
+    },
+  );
 
   test('native stream end invalidates before cancellation completes', () async {
     final listening = Completer<void>();

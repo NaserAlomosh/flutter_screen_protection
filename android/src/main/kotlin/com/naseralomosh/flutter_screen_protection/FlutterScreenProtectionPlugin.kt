@@ -14,6 +14,7 @@ import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.StandardMethodCodec
+import java.util.WeakHashMap
 
 class FlutterScreenProtectionPlugin internal constructor(
     private val sdkInt: () -> Int,
@@ -26,27 +27,45 @@ class FlutterScreenProtectionPlugin internal constructor(
         const val EVENTS = "$CHANNEL/events"
         const val VERSION = 1
         const val SCREENSHOT_API = Build.VERSION_CODES.UPSIDE_DOWN_CAKE
+
+        // A plugin can be replaced while its engine and Dart isolate keep running.
+        // The main thread owns this table, and the keys do not keep engines alive.
+        val generations = WeakHashMap<BinaryMessenger, Long>()
     }
 
+    private var engineAttachment: Any? = null
     private var messenger: BinaryMessenger? = null
     private var commands: MethodChannel? = null
     private var eventControl: MethodChannel? = null
     private var host: Host? = null
-    private var listening = false
-    private var generation = 0L
-    private var session: Long? = null
-    private var sequence = 0L
-    private var unregister: (() -> Unit)? = null
-    private var registrationFailure: String? = null
+    private var subscription: Any? = null
+    private var session: Session? = null
+    private var observationChangeDepth = 0
+    private var startRequested = false
+
+    private class Session(val generation: Long) {
+        var sequence = 0L
+        var unregister: (() -> Unit)? = null
+        var registrationFailure: String? = null
+    }
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        val attachment = Any()
+        engineAttachment = attachment
         val engineMessenger = binding.binaryMessenger
         messenger = engineMessenger
-        commands = MethodChannel(engineMessenger, CHANNEL).also { it.setMethodCallHandler(this) }
-        // Handle the EventChannel control methods directly to make cancel idempotent,
-        // including after a failed listen or native transport teardown.
+        commands = MethodChannel(engineMessenger, CHANNEL).also {
+            it.setMethodCallHandler { call, result ->
+                if (engineAttachment === attachment) onMethodCall(call, result)
+                else result.notImplemented()
+            }
+        }
+        // The v1 EventChannel control handshake makes cancel idempotent.
         eventControl = MethodChannel(engineMessenger, EVENTS).also {
-            it.setMethodCallHandler(::onEventControl)
+            it.setMethodCallHandler { call, result ->
+                if (engineAttachment === attachment) onEventControl(call, result)
+                else result.notImplemented()
+            }
         }
     }
 
@@ -71,10 +90,17 @@ class FlutterScreenProtectionPlugin internal constructor(
                     result.error("protocolFailure", null, null)
                     return
                 }
-                stopListening()
-                result.success(null)
-                listening = true
-                startSession()
+                changeObservation {
+                    val next = Any()
+                    replaceSubscription(next)
+                    try {
+                        result.success(null)
+                    } catch (failure: RuntimeException) {
+                        if (subscription === next) replaceSubscription(null)
+                        throw failure
+                    }
+                    if (subscription === next) startRequested = true
+                }
             }
             // Flutter also sends a null cancel on hot restart.
             "cancel" -> {
@@ -82,8 +108,10 @@ class FlutterScreenProtectionPlugin internal constructor(
                     result.error("protocolFailure", null, null)
                     return
                 }
-                stopListening()
-                result.success(null)
+                changeObservation {
+                    replaceSubscription(null)
+                    result.success(null)
+                }
             }
             else -> result.notImplemented()
         }
@@ -115,23 +143,42 @@ class FlutterScreenProtectionPlugin internal constructor(
     override fun onDetachedFromActivity() = detachHost()
 
     override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-        detachHost()
-        if (listening) {
-            stopListening()
-            send(null)
+        // Flutter may already have queued work for a handler being removed.
+        engineAttachment = null
+        changeObservation {
+            detachHost()
+            if (subscription != null) {
+                replaceSubscription(null)
+                send(null)
+            }
+            eventControl?.setMethodCallHandler(null)
+            commands?.setMethodCallHandler(null)
+            eventControl = null
+            commands = null
+            messenger = null
         }
-        eventControl?.setMethodCallHandler(null)
-        commands?.setMethodCallHandler(null)
-        eventControl = null
-        commands = null
-        messenger = null
     }
 
-    private fun detachHost() {
-        val previous = host ?: return
+    private fun detachHost() = changeObservation {
+        val previous = host ?: return@changeObservation
         host = null
         finishSession("detached")
         previous.lifecycle.removeObserver(previous)
+    }
+
+    // All transitions run on the main thread. A host can reenter during registration
+    // or removal. Fence it immediately and defer new starts until cleanup returns.
+    private inline fun changeObservation(change: () -> Unit) {
+        observationChangeDepth++
+        try {
+            change()
+            while (observationChangeDepth == 1 && startRequested) {
+                startRequested = false
+                if (subscription != null) startSession()
+            }
+        } finally {
+            observationChangeDepth--
+        }
     }
 
     private inner class Host(val activity: Activity, val lifecycle: Lifecycle) :
@@ -142,13 +189,15 @@ class FlutterScreenProtectionPlugin internal constructor(
         override fun onStart(owner: LifecycleOwner) {
             if (host !== this || started) return
             started = true
-            if (listening) startSession()
+            changeObservation {
+                if (subscription != null) startRequested = true
+            }
         }
 
         override fun onStop(owner: LifecycleOwner) {
             if (host !== this || !started) return
             started = false
-            finishSession("backgrounded")
+            changeObservation { finishSession("backgrounded") }
         }
 
         override fun onDestroy(owner: LifecycleOwner) {
@@ -157,27 +206,39 @@ class FlutterScreenProtectionPlugin internal constructor(
     }
 
     private fun startSession() {
-        val next = ++generation
+        if (session?.unregister != null) return
+        val engine = messenger ?: return
+        val generation = (generations[engine] ?: 0L) + 1
+        generations[engine] = generation
+        val current = Session(generation)
+        session = current
         val attached = host
         if (supportsScreenshots() && attached?.started == true) {
             try {
-                unregister = Api34ScreenshotObserver.register(attached.activity) {
-                    if (session == next) emit(next, "screenshotTaken", "activity")
+                val cleanup = Api34ScreenshotObserver.register(attached.activity) {
+                    if (session === current && current.sequence > 0) {
+                        emit(current, "screenshotTaken", "activity")
+                    }
                 }
+                if (session !== current) {
+                    cleanup()
+                    return
+                }
+                current.unregister = cleanup
             } catch (_: SecurityException) {
-                registrationFailure = "permissionMissing"
+                current.registrationFailure = "permissionMissing"
             } catch (_: RuntimeException) {
-                registrationFailure = "registrationFailed"
+                current.registrationFailure = "registrationFailed"
             }
         }
+        if (session !== current) return
+
         val unknownReason = when {
-            !supportsScreenshots() || unregister != null -> null
+            !supportsScreenshots() || current.unregister != null -> null
             else -> screenshotUnavailableReason()
         }
-        session = next
-        sequence = 0
         emit(
-            next, "snapshot", "unknown",
+            current, "snapshot", "unknown",
             mapOf(
                 "status" to if (unknownReason == null) "unsupported" else "unknown",
                 "reason" to (unknownReason ?: "unsupportedOs"),
@@ -187,30 +248,26 @@ class FlutterScreenProtectionPlugin internal constructor(
     }
 
     private fun finishSession(reason: String) {
+        startRequested = false
+        val previous = session ?: return
+        session = null
+        if (previous.sequence > 0) emit(previous, "invalidated", "unknown", mapOf("reason" to reason))
+        previous.unregister?.invoke()
+    }
+
+    private fun replaceSubscription(next: Any?) {
+        subscription = next
+        startRequested = false
         val previous = session
         session = null
-        if (previous != null) emit(previous, "invalidated", "unknown", mapOf("reason" to reason))
-        removeObservation()
-    }
-
-    private fun stopListening() {
-        listening = false
-        session = null
-        removeObservation()
-    }
-
-    private fun removeObservation() {
-        val cleanup = unregister
-        unregister = null
-        registrationFailure = null
-        cleanup?.invoke()
+        previous?.unregister?.invoke()
     }
 
     private fun capabilities(): Map<String, Any> {
         val screenshots = when {
             !supportsScreenshots() -> unavailable("unsupportedOs")
-            unregister != null -> mapOf("support" to "supported", "scope" to "activity")
-            registrationFailure == "permissionMissing" -> unavailable("permissionMissing")
+            session?.unregister != null -> mapOf("support" to "supported", "scope" to "activity")
+            session?.registrationFailure == "permissionMissing" -> unavailable("permissionMissing")
             else -> unavailable(screenshotUnavailableReason(), temporary = true)
         }
         return mapOf(
@@ -220,7 +277,7 @@ class FlutterScreenProtectionPlugin internal constructor(
         )
     }
 
-    private fun screenshotUnavailableReason(): String = registrationFailure ?: when (host?.started) {
+    private fun screenshotUnavailableReason(): String = session?.registrationFailure ?: when (host?.started) {
         null -> "detached"
         false -> "backgrounded"
         true -> "initializing"
@@ -233,22 +290,25 @@ class FlutterScreenProtectionPlugin internal constructor(
     )
 
     private fun emit(
-        session: Long,
+        current: Session,
         kind: String,
         scope: String,
         fields: Map<String, Any> = emptyMap(),
     ) {
+        val owner = subscription
         val packet = mapOf(
             "version" to VERSION,
-            "session" to session,
-            "sequence" to sequence++,
+            "session" to current.generation,
+            "sequence" to current.sequence++,
             "kind" to kind,
             "timestampMs" to timestampMs(),
             "scope" to scope,
         ) + fields
-        if (!send(packet)) {
-            stopListening()
-            send(null)
+        if (!send(packet) && subscription === owner) {
+            changeObservation {
+                replaceSubscription(null)
+                if (subscription == null) send(null)
+            }
         }
     }
 

@@ -18,7 +18,8 @@ internal object Api34ScreenshotObserver {
 
         var listener: (() -> Unit)? = onScreenshot
         val callback = Activity.ScreenCaptureCallback { listener?.invoke() }
-        val unregister = {
+        val unregister: () -> Unit = cleanup@{
+            if (listener == null) return@cleanup
             // Even if the platform rejects removal, the callback cannot retain the plugin.
             listener = null
             try {

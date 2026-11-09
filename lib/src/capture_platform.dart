@@ -79,10 +79,42 @@ final class ChannelCapturePlatform implements CapturePlatform {
     var acknowledged = false;
     final pending = <Object?>[];
 
+    Future<void>? cancellation;
+
+    Future<void> cancelChannel() async {
+      accepting = false;
+      pending.clear();
+      if (!ownsChannel) return;
+      try {
+        // Keep draining in-flight messages until native cancellation completes.
+        // With no handler, Flutter can buffer them for the next subscriber.
+        await _eventControl
+            .invokeMethod<void>('cancel', _arguments)
+            .timeout(_cancelTimeout);
+      } catch (_) {
+        // Native teardown is also tied to host lifecycle. A subsequent listen
+        // replaces an old registration if cancellation did not reach native.
+      } finally {
+        _events.binaryMessenger.setMessageHandler(_events.name, null);
+        _observing = ownsChannel = false;
+        if (!stream.isClosed) unawaited(stream.close());
+      }
+    }
+
+    Future<void> cancel() => cancellation ??= cancelChannel();
+
+    void fail(CaptureReason reason) {
+      if (!accepting || stream.isClosed) return;
+      stream.addError(CaptureException(reason));
+      // A paused listener can delay stream completion. Release native
+      // observation independently of when the consumer receives the error.
+      unawaited(cancel());
+      unawaited(stream.close());
+    }
+
     Future<void> listen() async {
       if (_observing) {
-        stream.addError(const CaptureException(CaptureReason.ambiguousHost));
-        unawaited(stream.close());
+        fail(CaptureReason.ambiguousHost);
         return;
       }
       try {
@@ -91,38 +123,26 @@ final class ChannelCapturePlatform implements CapturePlatform {
         messenger.setMessageHandler(_events.name, (reply) async {
           if (!accepting || stream.isClosed) return null;
           if (reply == null) {
-            // Stream done can wait for asynchronous cancel. Publish failure
-            // first so previously known capture state is cleared immediately.
-            stream.addError(
-              CaptureException(
-                acknowledged
-                    ? CaptureReason.transportFailure
-                    : CaptureReason.registrationFailed,
-              ),
+            fail(
+              acknowledged
+                  ? CaptureReason.transportFailure
+                  : CaptureReason.registrationFailed,
             );
-            unawaited(stream.close());
-          } else {
-            try {
-              final packet = _events.codec.decodeEnvelope(reply);
-              if (acknowledged) {
-                stream.add(packet);
-              } else if (pending.length < 64) {
-                pending.add(packet);
-              } else {
-                stream.addError(
-                  const CaptureException(CaptureReason.protocolFailure),
-                );
-                unawaited(stream.close());
-              }
-            } on PlatformException {
-              stream.addError(
-                const CaptureException(CaptureReason.transportFailure),
-              );
-            } catch (_) {
-              stream.addError(
-                const CaptureException(CaptureReason.protocolFailure),
-              );
+            return null;
+          }
+          try {
+            final packet = _events.codec.decodeEnvelope(reply);
+            if (acknowledged) {
+              stream.add(packet);
+            } else if (pending.length < 64) {
+              pending.add(packet);
+            } else {
+              fail(CaptureReason.protocolFailure);
             }
+          } on PlatformException {
+            fail(CaptureReason.transportFailure);
+          } catch (_) {
+            fail(CaptureReason.protocolFailure);
           }
           return null;
         });
@@ -134,30 +154,7 @@ final class ChannelCapturePlatform implements CapturePlatform {
         }
         pending.clear();
       } catch (_) {
-        if (accepting && !stream.isClosed) {
-          stream.addError(
-            const CaptureException(CaptureReason.registrationFailed),
-          );
-          unawaited(stream.close());
-        }
-      }
-    }
-
-    Future<void> cancel() async {
-      accepting = false;
-      pending.clear();
-      if (!ownsChannel) return;
-      try {
-        _events.binaryMessenger.setMessageHandler(_events.name, null);
-        await _eventControl
-            .invokeMethod<void>('cancel', _arguments)
-            .timeout(_cancelTimeout);
-      } catch (_) {
-        // Local ownership is already fenced. Native teardown is also tied
-        // to host lifecycle, and a subsequent listen replaces old observers.
-      } finally {
-        _observing = ownsChannel = false;
-        if (!stream.isClosed) unawaited(stream.close());
+        fail(CaptureReason.registrationFailed);
       }
     }
 
