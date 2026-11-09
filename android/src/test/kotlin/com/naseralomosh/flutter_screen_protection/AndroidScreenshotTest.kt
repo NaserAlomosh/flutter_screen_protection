@@ -333,16 +333,83 @@ internal class AndroidScreenshotTest {
     }
 
     @Test
-    fun aNewPluginInstanceKeepsGenerationsIncreasingOnTheSameEngine() {
+    fun repeatedPluginReplacementOnTheSameEngineFencesQueuedWork() {
         val engine = Engine()
+        var plugin = engine.plugin
+        var deliverStaleWork: (() -> Unit)? = null
+
+        repeat(3) { index ->
+            if (index > 0) {
+                plugin = FlutterScreenProtectionPlugin({ 34 }, { 1700000000001L })
+                plugin.onAttachedToEngine(engine.binding)
+            }
+            val queuedCallbacks = ArrayDeque<Runnable>()
+            val host = TestHost(startedOnAttach = true, executor = Executor(queuedCallbacks::addLast))
+            plugin.onAttachedToActivity(host.binding)
+            engine.listen()
+            val callback = host.callback()
+            val handler = engine.eventHandler()
+            host.executor.execute(callback::onScreenCaptured)
+
+            deliverStaleWork?.invoke()
+            callback.onScreenCaptured()
+            plugin.onDetachedFromEngine(engine.binding)
+            verify(host.activity).unregisterScreenCaptureCallback(callback)
+            deliverStaleWork = {
+                assertNull(engine.call("cancel", null, handler = handler))
+                assertNull(engine.call("listen", mapOf("version" to 1), handler = handler))
+                queuedCallbacks.removeFirst().run()
+            }
+        }
+        deliverStaleWork?.invoke()
+
+        assertEquals(List(3) { listOf("snapshot", "screenshotTaken", "invalidated") }.flatten(), engine.kinds())
+        assertEquals(List(3) { listOf(0L, 1L, 2L) }.flatten(), engine.packets.map { it["sequence"] })
+        assertEquals(listOf(1L, 1L, 1L, 2L, 2L, 2L, 3L, 3L, 3L), engine.packets.map { it["session"] })
+    }
+
+    @Test
+    fun replacementDuringRegistrationRollsBackWithoutPublishingTheOldSnapshot() {
+        val engine = Engine()
+        val host = TestHost(startedOnAttach = true)
+        val replacement = FlutterScreenProtectionPlugin({ 34 }, { 1700000000001L })
+        engine.plugin.onAttachedToActivity(host.binding)
+        host.onRegister = {
+            host.onRegister = {}
+            engine.plugin.onDetachedFromEngine(engine.binding)
+            replacement.onAttachedToEngine(engine.binding)
+            replacement.onAttachedToActivity(host.binding)
+            engine.listen()
+        }
+
+        engine.listen()
+        val current = host.callback(count = 2)
+        val previous = host.callbacks.first()
+        verify(host.activity).unregisterScreenCaptureCallback(previous)
+        previous.onScreenCaptured()
+        current.onScreenCaptured()
+
+        assertEquals(listOf("snapshot", "screenshotTaken"), engine.kinds())
+        assertEquals(listOf(2L, 2L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 1L), engine.packets.map { it["sequence"] })
+        replacement.onDetachedFromEngine(engine.binding)
+    }
+
+    @Test
+    fun independentEnginesAdvanceSeparatelyAndReattachingKeepsTheOriginalGeneration() {
+        val engine = Engine(sdk = 33)
+        val other = Engine(sdk = 33)
+        engine.listen()
+        other.listen()
         engine.listen()
         engine.plugin.onDetachedFromEngine(engine.binding)
-
-        val replacement = FlutterScreenProtectionPlugin({ 34 }, { 1700000000001L })
-        replacement.onAttachedToEngine(engine.binding)
+        other.listen()
+        engine.plugin.onAttachedToEngine(engine.binding)
         engine.listen()
-        assertEquals(listOf(1L, 2L), engine.packets.map { it["session"] })
-        assertEquals(listOf(0L, 0L), engine.packets.map { it["sequence"] })
+
+        assertEquals(listOf(1L, 2L, 3L), engine.packets.map { it["session"] })
+        assertEquals(listOf(0L, 0L, 0L), engine.packets.map { it["sequence"] })
+        assertEquals(listOf(1L, 2L), other.packets.map { it["session"] })
     }
 
     @Test

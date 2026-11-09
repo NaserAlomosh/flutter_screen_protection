@@ -166,6 +166,8 @@ void main() {
       platform.current.send(packet('resumed'));
       await ready;
       expect(controller.state.value.status, CaptureStatus.active);
+      platform.current.send(packet('initial'));
+      expect(controller.state.value.status, CaptureStatus.active);
     },
   );
 
