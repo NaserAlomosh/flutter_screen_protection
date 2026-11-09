@@ -8,7 +8,7 @@ P0 gates implementation or release. P1 is core scope. P2 is optional. Status voc
 | FSP-010 | P0 | BLOCKED | FSP-000 | Phase 1 core decisions approved. [ADR-007](docs/DECISION_REGISTER.md) approved and applied. Android API 29 runtime qualification passed on Flutter 3.35.4 and 3.47.7. iOS 15 runtime evidence and Flutter 3.47.9 native checks remain open. See the [evidence and gaps](docs/PLATFORM_COMPATIBILITY.md#remaining-qualification). |
 | FSP-001 | P0 | DONE | FSP-010 core approvals | Define typed events, state, capability reasons, errors and shared wire fixtures. Preserve version lookup. |
 | FSP-006 | P0 | DONE | FSP-001 | Build controller and fake platform. Test snapshot ordering, lifecycle invalidation, retry and disposal. |
-| FSP-002 | P1 | TODO | FSP-001 | Bind Android Activity and implement screenshot callback with API and permission checks. |
+| FSP-002 | P1 | IN PROGRESS | FSP-001 | Android screenshot observation implemented. API 29 and 31 fallback and API 34 and 35 emulator screenshot delivery passed. Physical API 34+ screenshot evidence is pending. |
 | FSP-003 | P1 | TODO | FSP-002 | Add Android UID recording visibility, initial read and lifecycle removal. |
 | FSP-004 | P1 | TODO | FSP-001 | Bind iOS host and implement screenshot observation and cleanup. |
 | FSP-005 | P1 | TODO | FSP-004 | Implement scene trait and bound-screen fallback. Validate scene migration on current Xcode. |
@@ -20,4 +20,4 @@ P0 gates implementation or release. P1 is core scope. P2 is optional. Status voc
 | FSP-013 | P0 | TODO | FSP-010 | Resolve license, version, metadata, release ownership and CI targets. |
 | FSP-014 | P0 | TODO | FSP-012, FSP-013 | Produce release evidence and successful package dry-run. |
 
-FSP-001 and FSP-006 passed Dart codec, channel, controller, and version-lookup tests. Native integration starts with **FSP-002** after review of the v1 contract and Android manifest ownership and lifecycle integration (ADR-009). See the [decision register](docs/DECISION_REGISTER.md) for outstanding platform approvals.
+FSP-001 and FSP-006 passed Dart codec, channel, controller, and version-lookup tests. **FSP-002** uses the approved v1 contract and the Android manifest ownership and lifecycle decision in [ADR-009](docs/DECISION_REGISTER.md#adr-009-android-screenshot-permission-and-lifecycle). See the [Android screenshot validation record](docs/TESTING_STRATEGY.md#fsp-002-android-screenshot-validation).

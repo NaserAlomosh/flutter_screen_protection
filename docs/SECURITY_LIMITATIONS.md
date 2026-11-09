@@ -13,6 +13,10 @@
 
 See the [API availability and platform sources](PLATFORM_COMPATIBILITY.md).
 
+## Android screenshot observation
+
+Android delivers the supported Activity callback after capture. The event carries metadata only. It cannot prevent a screenshot, retroactively redact pixels or signal that a screen recording has started. Android shows a detection notice to the user. Android 14 documents the hardware screenshot button combination and excludes ADB screenshot commands and instrumentation captures. Other gestures and OEM paths require separate evidence. The adapter observes only the bound, started Activity and leaves window flags under host ownership. [Android screenshot detection](https://developer.android.com/about/versions/14/features/screenshot-detection).
+
 ## Selective exclusion from captured output
 
 Android supports `SurfaceView.setSecure(true)` from API 17. It must be configured before the containing window attaches and applies only to content drawn on that separate native surface. An ordinary Flutter widget shares the Flutter render surface. A secure SurfaceView cannot mark an arbitrary region of that buffer secure. A custom native renderer would need its own surface, compositing, semantics and lifecycle design, with physical evidence before any separate feature claim. API 35 `View.setContentSensitivity` secures the hosting window during active MediaProjection, so it is not a per-view exclusion mechanism. [SurfaceView](https://developer.android.com/reference/android/view/SurfaceView#setSecure(boolean)), [View sensitivity](https://developer.android.com/reference/android/view/View#setContentSensitivity(int)).

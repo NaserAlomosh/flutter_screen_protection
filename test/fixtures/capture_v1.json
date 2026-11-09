@@ -123,6 +123,29 @@
       }
     }
   },
+  "androidBelow34": {
+    "version": 1,
+    "session": 1,
+    "sequence": 0,
+    "kind": "snapshot",
+    "timestampMs": 1700000000000,
+    "scope": "unknown",
+    "status": "unsupported",
+    "reason": "unsupportedOs",
+    "capabilities": {
+      "platform": "android",
+      "screenshots": {
+        "support": "unavailable",
+        "scope": "unknown",
+        "reason": "unsupportedOs"
+      },
+      "continuousCapture": {
+        "support": "unavailable",
+        "scope": "unknown",
+        "reason": "unsupportedOs"
+      }
+    }
+  },
   "unknown": {
     "version": 1,
     "session": 1,

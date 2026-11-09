@@ -66,6 +66,70 @@ void main() {
     },
   );
 
+  test('Android screenshot fans out without activating recording', () async {
+    final listening = Completer<void>();
+    final calls = <String>[];
+    messenger.setMockMethodCallHandler(events, (call) async {
+      calls.add(call.method);
+      if (call.method == 'listen') listening.complete();
+      return null;
+    });
+    final controller = FlutterScreenProtectionController();
+    addTearDown(controller.dispose);
+    final first = controller.captureEvents.first;
+    final second = controller.captureEvents.first;
+    final ready = controller.initialize();
+    final repeated = controller.initialize();
+    await listening.future;
+
+    await deliver(codec.encodeSuccessEnvelope(packet('unsupported')));
+    await Future.wait([ready, repeated]);
+    await controller.initialize();
+    final before = controller.state.value;
+    expect(before.status, CaptureStatus.unsupported);
+    expect(
+      controller.capabilities.screenshots.support,
+      CaptureSupport.supported,
+    );
+
+    await deliver(codec.encodeSuccessEnvelope(packet('screenshot')));
+    for (final event in await Future.wait([first, second])) {
+      expect(event, isA<ScreenshotTaken>());
+      expect(event.scope, CaptureScope.activity);
+      expect(event.sequence, 1);
+    }
+    expect(controller.state.value, before);
+    expect(
+      controller.capabilities.continuousCapture.support,
+      CaptureSupport.unavailable,
+    );
+    await controller.dispose();
+    expect(calls, ['listen', 'cancel']);
+  });
+
+  test('Android below 34 exposes unsupported screenshot capability', () async {
+    final listening = Completer<void>();
+    messenger.setMockMethodCallHandler(events, (call) async {
+      if (call.method == 'listen') listening.complete();
+      return null;
+    });
+    final controller = FlutterScreenProtectionController();
+    addTearDown(controller.dispose);
+    final ready = controller.initialize();
+    await listening.future;
+    await deliver(codec.encodeSuccessEnvelope(packet('androidBelow34')));
+    await ready;
+    expect(
+      controller.capabilities.screenshots.support,
+      CaptureSupport.unavailable,
+    );
+    expect(
+      controller.capabilities.screenshots.reason,
+      CaptureReason.unsupportedOs,
+    );
+    expect(controller.state.value.status, CaptureStatus.unsupported);
+  });
+
   test(
     'missing native registration completes with a safe typed failure',
     () async {

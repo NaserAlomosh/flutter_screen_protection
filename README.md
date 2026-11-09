@@ -2,9 +2,9 @@
 
 An Android and iOS Flutter plugin project for privacy-sensitive screens in banking, fintech, and other apps. The goal is to help apps respond to capture signals and hide selected fields while keeping the rest of the interface usable.
 
-**Development status** — The `0.0.1` project includes the Dart capture contracts, channel adapter, controller, and `getPlatformVersion()`. Native capture detection, widget rendering, and window privacy remain planned.
+**Development status** — The `0.0.1` project includes the Dart capture contracts, channel adapter, controller, and `getPlatformVersion()`. Android screenshot observation is implemented for API 34+ and is undergoing runtime qualification. Continuous capture detection, widget rendering, and window privacy remain planned.
 
-| Planned capability | Android | iOS |
+| Capability | Android | iOS |
 | --- | --- | --- |
 | Screenshot notification | Android 14+ for supported screenshot gestures | iOS 15+ target |
 | Live capture state | Android 15+ reports app visibility in recording | iOS 15+ target, with scene-scoped detection from iOS 17 |
@@ -15,7 +15,7 @@ Screenshot notifications arrive after capture. Reactive masking can take effect 
 
 ## Dart capture API
 
-`FlutterScreenProtectionController` exposes current capture state, independent screenshot and continuous-capture capabilities, and a broadcast stream of typed events. The controller starts in `CaptureStatus.unknown` and uses an ordered snapshot to synchronize with the future Android and iOS adapters. Capture behavior can currently be exercised with the test fake. See the [API design](docs/API_DESIGN.md) for the public contracts and native wire protocol.
+`FlutterScreenProtectionController` exposes current capture state, independent screenshot and continuous-capture capabilities, and a broadcast stream of typed events. The controller starts in `CaptureStatus.unknown` and uses an ordered snapshot to synchronize with the Android screenshot adapter. Hosts can inspect or remove the Android detection permission through manifest merging. The test fake can exercise the full Dart capture contract. See the [API design](docs/API_DESIGN.md) for the public contracts and native wire protocol.
 
 ## Project documentation
 
