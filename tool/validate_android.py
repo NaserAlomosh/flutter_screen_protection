@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """Sequential real-emulator evidence runner. Requires Pillow, Android SDK and test APK."""
-import argparse, json, os, pathlib, re, select, shutil, subprocess, time, urllib.request
+import argparse, hashlib, json, os, pathlib, re, select, shutil, subprocess, time, urllib.request
 from PIL import Image
 
 parser = argparse.ArgumentParser()
 parser.add_argument('api', type=int)
 parser.add_argument('--image', required=True)
 parser.add_argument('--apk', default='/private/tmp/fsp-validation.apk')
+parser.add_argument('--evidence-dir', default='docs/evidence/ANDROID_API_29_37')
 a = parser.parse_args()
 sdk = pathlib.Path(os.environ.get('ANDROID_HOME', str(pathlib.Path.home() / 'Library/Android/sdk')))
-out = pathlib.Path(__file__).resolve().parents[1] / 'docs/evidence/ANDROID_API_29_37' / f'api-{a.api}'
+out = pathlib.Path(__file__).resolve().parents[1] / a.evidence_dir / f'api-{a.api}'
 out.mkdir(parents=True, exist_ok=True)
+(out/'run.json').write_text(json.dumps(dict(api=a.api, image=a.image, apkSha256=hashlib.sha256(pathlib.Path(a.apk).read_bytes()).hexdigest()), indent=2)+'\n')
 env = dict(os.environ, ANDROID_AVD_HOME='/private/tmp/fsp-rebuild-avds')
 pathlib.Path(env['ANDROID_AVD_HOME']).mkdir(exist_ok=True)
 name = f'FSP_REBUILD_{a.api}'
@@ -40,7 +42,9 @@ def capture(name, blocked, method='adb-screencap'):
     try:
         im = Image.open(p).convert('RGB')
         pixels = list(im.getdata())
-        marker = sum(abs(r-32)<8 and abs(g-192)<8 and abs(b-96)<8 for r,g,b in pixels)/len(pixels)
+        green = sum(abs(r-32)<8 and abs(g-192)<8 and abs(b-96)<8 for r,g,b in pixels)/len(pixels)
+        red = sum(abs(r-224)<8 and abs(g-32)<8 and abs(b-64)<8 for r,g,b in pixels)/len(pixels)
+        marker = green + red if blocked else green
         status = 'PASS' if foreground and (marker < .001 if blocked else marker > .25) else 'FAIL'
         return dict(test=name, expectedBlocked=blocked, method=method, status=status, foreground=foreground, markerFraction=marker, screenshot=p.name)
     except Exception as e:
@@ -49,7 +53,7 @@ def capture(name, blocked, method='adb-screencap'):
 results=[]
 owned=False
 try:
-    deadline=time.time()+240
+    deadline=time.time()+600
     while time.time()<deadline:
         if emulator.poll() is not None: raise RuntimeError(f'Emulator exited {emulator.returncode}; see emulator.log')
         if adb('shell','getprop','sys.boot_completed').stdout.strip()==b'1': break
@@ -61,6 +65,12 @@ try:
     (out/'device.txt').write_bytes(adb('shell','getprop').stdout)
     actual=adb('shell','getprop','ro.build.version.sdk').stdout.decode().strip()
     if actual != str(a.api): raise RuntimeError(f'Expected API {a.api}, got {actual}')
+    if a.api >= 34:
+        # Configure navigation before launching: changing this overlay can recreate
+        # the Activity and discard the framework's back callback registration.
+        adb('shell','cmd','overlay','enable','--user','0','com.android.internal.systemui.navbar.gestural')
+        adb('shell','settings','put','global','enable_back_animation','1')
+        time.sleep(2)
     adb('shell','input','keyevent','82')
     adb('install','-r',a.apk,timeout=120).check_returncode()
     adb('forward','tcp:8876','tcp:8765')
@@ -69,7 +79,7 @@ try:
     package='com.naseralomosh.flutter_screen_protection_example'
     component=package+'/.ValidationActivity'
     adb('shell','am','start','-n',component).check_returncode()
-    deadline=time.time()+240
+    deadline=time.time()+600
     done=False
     with open(out/'logcat.txt','wb') as transcript:
         while time.time()<deadline:
@@ -78,14 +88,70 @@ try:
             line=stream.stdout.readline()
             transcript.write(line); transcript.flush()
             text=line.decode(errors='replace')
+            transition=re.search(r'FSP_TRANSITION (\S+) (GATED|SECURE|GESTURE)',text)
+            if transition:
+                test,mode=transition.groups()
+                gesture_process=None
+                if mode=='GESTURE':
+                    config=adb('shell','cmd','overlay','enable','--user','0','com.android.internal.systemui.navbar.gestural')
+                    (out/'gesture-config.txt').write_bytes(config.stdout+config.stderr)
+                    time.sleep(1)
+                    gesture_process=subprocess.Popen([str(sdk/'platform-tools/adb'),'-s',serial,'shell','input','swipe','2','900','600','900','2000'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+                for sample in range(3):
+                    time.sleep(.1)
+                    name=f'{test}-{sample}'
+                    item=capture(name,True,method='transition-adb-screencap')
+                    if mode=='GATED':
+                        flags=(out/f'{name}-full-window.txt').read_text()
+                        native_secure=bool(re.search(r'ValidationActivity[^\n]*.*?fl=[^\n]*\bSECURE\b', flags, re.S))
+                        item['nativeSecure']=native_secure
+                        if native_secure or not (out/f'{name}.png').stat().st_size:
+                            item['status']='FAIL'
+                            item['reason']='Gate test requires an unprotected native window and a real neutral PNG'
+                        elif item['status']=='PASS':
+                            px=list(Image.open(out/f'{name}.png').convert('RGB').getdata())
+                            black=sum(max(pixel)<8 for pixel in px)/len(px)
+                            item['neutralBlackFraction']=black
+                            if black<.8:
+                                item['status']='FAIL'
+                                item['reason']='Expected a neutral black Flutter gate'
+                    if mode=='GESTURE' and (out/f'{name}.png').stat().st_size:
+                        im=Image.open(out/f'{name}.png').convert('RGB')
+                        px=list(im.getdata())
+                        red=sum(abs(r-224)<8 and abs(g-32)<8 and abs(b-64)<8 for r,g,b in px)/len(px)
+                        item['sensitiveRedFraction']=red
+                        item['status']='PASS' if item.get('foreground') and red<.001 else 'FAIL'
+                        item['method']='edge-gesture-adb-screencap'
+                    results.append(item)
+                    print(a.api,name,item['status'],flush=True)
+                if gesture_process is not None:
+                    gesture_process.wait(timeout=10)
+                    time.sleep(7)
+                    gesture_log=adb('logcat','-d','-s','flutter').stdout.decode(errors='replace')
+                    observed='FSP_OS_GESTURE_STARTED' in gesture_log
+                    (out/'os-gesture-flutter.txt').write_text(gesture_log)
+                    results.append(dict(test='os_predictive_progress_observed',method='Android edge gesture',status='PASS' if observed else 'BLOCKED',note='ADB edge swipe reached Flutter userGestureInProgress' if observed else 'Injected edge swipe did not produce a Flutter predictive-progress callback'))
+                    if observed:results.append(capture('os_predictive_committed',True))
+                urllib.request.urlopen('http://127.0.0.1:8876/next',timeout=15).read()
             match=re.search(r'FSP_EVIDENCE (\S+) (BLOCKED|ALLOWED)',text)
             if match:
                 test,state=match.groups(); blocked=state=='BLOCKED'
                 if test=='system_back':
                     adb('shell','input','keyevent','4')
                     time.sleep(1)
-                time.sleep(.3)
-                result=capture(test,blocked); results.append(result)
+                # FrameTiming reports are batched by the engine (up to ~1 second).
+                # Settled evidence waits for that safe-release barrier; transition samples do not.
+                time.sleep(1.5)
+                release_wait=time.monotonic()
+                if not blocked:
+                    # Wait for the asynchronous safe-release barrier, bounded and recorded.
+                    while time.monotonic()-release_wait < 5:
+                        flags=adb('shell','dumpsys','window','windows').stdout.decode(errors='replace')
+                        if not re.search(r'ValidationActivity[^\n]*.*?fl=[^\n]*\bSECURE\b',flags,re.S): break
+                        time.sleep(.2)
+                result=capture(test,blocked)
+                result['settledCheckSeconds']=round(time.monotonic()-release_wait,3)
+                results.append(result)
                 (out/f'{test}-window.txt').write_bytes(adb('shell','dumpsys','window','windows').stdout)
                 print(a.api,test,result['status'],flush=True)
                 if test in ['global_enabled_home','protected_transfer']:
@@ -105,7 +171,7 @@ try:
                         for f in new:
                             im=Image.open(out/('system-ui-'+pathlib.Path(f).name)).convert('RGB')
                             px=list(im.getdata())
-                            fractions.append(sum(abs(r-32)<8 and abs(g-192)<8 and abs(b-96)<8 for r,g,b in px)/len(px))
+                            fractions.append(sum((abs(r-32)<8 and abs(g-192)<8 and abs(b-96)<8) or (blocked and abs(r-224)<8 and abs(g-32)<8 and abs(b-64)<8) for r,g,b in px)/len(px))
                         status='PASS' if (max(fractions)<.001 if blocked else max(fractions)>.25) else 'FAIL'
                     elif blocked and ('PERMISSION_DENIED' in new_system_log or 'secure' in new_system_log.lower()):
                         status='PASS'

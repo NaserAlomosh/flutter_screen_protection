@@ -1,0 +1,8 @@
+--------- beginning of main
+11-15 09:05:02.909   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:17.600   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:22.005   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:40.510   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:44.873   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:53.166   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:55.757   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED

@@ -36,3 +36,6 @@ migrate_working_dir/
 # Keep requested validation logs reviewable.
 !docs/evidence/ANDROID_API_29_37/*.log
 !docs/evidence/ANDROID_API_29_37/**/*.log
+
+!docs/evidence/AUTOMATIC_ROUTE_PROTECTION/*.log
+!docs/evidence/AUTOMATIC_ROUTE_PROTECTION/**/*.log

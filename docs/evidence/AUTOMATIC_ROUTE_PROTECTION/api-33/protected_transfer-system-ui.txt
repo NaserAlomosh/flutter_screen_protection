@@ -1,0 +1,6 @@
+--------- beginning of main
+11-15 09:05:02.909   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:05.620  2544  2544 D Screenshot: ScrollCapture: No scrollable targets found in window [com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity]
+11-15 09:05:17.600   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:22.005   405   405 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:05:22.189  2544  2544 D Screenshot: ScrollCapture: findScrollCaptureTargetWindow returned null [null]

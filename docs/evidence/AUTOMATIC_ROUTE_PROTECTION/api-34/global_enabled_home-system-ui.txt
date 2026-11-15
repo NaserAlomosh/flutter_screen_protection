@@ -1,0 +1,7 @@
+--------- beginning of main
+11-15 10:15:16.200   386   386 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 10:15:19.263  4974  4974 D Screenshot: Processing screenshot data
+11-15 10:15:19.278  4974  4974 D Screenshot: Screenshot request: ScreenshotData(type=1, source=2, userHandle=UserHandle{0}, topComponent=ComponentInfo{com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity}, screenBounds=null, taskId=8, insets=Insets{left=0, top=0, right=0, bottom=0}, bitmap=null, contextUrl=null)
+11-15 10:15:19.443  4974  4974 D Screenshot: ScrollCapture: No scrollable targets found in window [com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity]
+11-15 10:15:19.494  4974  5011 D Screenshot: Inserted new URI: content://0@media/external/images/media/1000000019
+11-15 10:15:19.765  4974  5011 D Screenshot: Saved screenshot: Result{uri=content://0@media/external/images/media/1000000019, requestId=f87939cf-970c-4183-98e8-14631f67a435, fileName='Screenshot_20261115-101519.png', timestamp=1794726919446, format=PNG, published=true}

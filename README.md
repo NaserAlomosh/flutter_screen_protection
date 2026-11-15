@@ -1,9 +1,8 @@
 # flutter_screen_protection
 
-Android-only Flutter screenshot protection using `WindowManager.LayoutParams.FLAG_SECURE`.
-Exactly two policies: a global backend-supplied Boolean and a configurable set of protected route names. Android minimum API 29; validation targets API 29–37. See [verification](docs/VERIFICATION.md) for executed results, not a blanket device compatibility claim.
+Android-only screenshot protection with two policies: a backend-supplied global Boolean and a list of protected Flutter route names. Uses Android `FLAG_SECURE`; minimum API 29. See [automatic navigation verification](docs/AUTOMATIC_ROUTE_PROTECTION.md) for API 29–37 execution results and limitations.
 
-## Initialize before showing content
+## Configure once at the root
 
 ```dart
 import 'package:flutter/material.dart';
@@ -12,20 +11,70 @@ import 'package:flutter_screen_protection/flutter_screen_protection.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterScreenProtection.initialize(
-    screenshotsEnabled: false,
-    protectedRoutes: ['/login', '/account-details', '/transfer', '/card-details'],
+    screenshotsEnabled: true, // Supply the backend value; default is false.
+    protectedRoutes: ['/login', '/transfer', '/account-details', '/card-details'],
   );
   runApp(MaterialApp(
+    builder: FlutterScreenProtection.builder,
     navigatorObservers: [FlutterScreenProtection.navigatorObserver],
     initialRoute: '/home',
-    routes: {/* your named routes */},
+    routes: existingRoutes, // Keep your existing routes or onGenerateRoute factory.
   ));
 }
 ```
 
-Both native and Dart state start blocked. Until the observer knows a named route, protection remains on. `initialize` may be repeated to replace both configurations; it does not reset navigation. The plugin does not fetch backend configuration or persist it across process death.
+**Both the builder and observer are required for automatic first-frame protection.** Register the singleton observer on one root Navigator. The builder must enclose that Navigator and all sensitive Flutter UI. If you already have a MaterialApp builder, compose it centrally:
 
-For protection **before plugin attachment**, add this to your Android FlutterActivity. It also protects the native launch window. Use a non-sensitive launch theme/splash:
+```dart
+builder: (context, child) => FlutterScreenProtection.builder(
+  context,
+  existingBuilder(context, child),
+),
+```
+
+Screens and existing navigation calls stay unchanged:
+
+```dart
+Navigator.pushNamed(context, '/transfer');
+Navigator.pop(context);
+Navigator.pushReplacementNamed(context, '/login');
+```
+
+No per-screen wrapper, route subclass, replacement navigation API, or `protectNavigation` call is required. The same builder can wrap a standalone Navigator through a root `Builder` widget; attach `navigatorObserver` to that Navigator's `observers` list.
+
+## Public API
+
+- `initialize({bool screenshotsEnabled = false, List<String> protectedRoutes = const []}) → Future<void>`
+- `setScreenshotsEnabled(bool enabled) → Future<void>`
+- `setProtectedRoutes(List<String> routes) → Future<void>`
+- `builder(BuildContext context, Widget? child) → Widget`
+- `navigatorObserver → NavigatorObserver`
+- `protectNavigation(VoidCallback navigate) → Future<void>` remains an optional legacy helper. The root integration does not need it; existing callers can migrate without changing their screens.
+
+```dart
+await FlutterScreenProtection.setScreenshotsEnabled(response.screenshotsEnabled);
+await FlutterScreenProtection.setProtectedRoutes(['/account-details', '/transfer']);
+```
+
+The plugin does not fetch or persist backend configuration. `false` always blocks, even on an unprotected route. Names match exactly and case-sensitively. Unknown/empty names, an empty Navigator and startup fail closed. Nonopaque routes cannot uncover protected content underneath them. Copying the supplied list prevents later caller mutations from silently changing policy.
+
+## How automatic rendering protection works
+
+The observer updates policy synchronously when routes or gestures change. The root builder installs a render boundary around the Navigator:
+
+1. Before protected pixels can enter the displayed scene, the gate checks whether Android has acknowledged a secure window. If not, it paints a neutral black frame and excludes the Navigator's layers, pointer hit testing and subtree semantics.
+2. Protected widgets can still build, lay out, or update offscreen cached layers; their Flutter pixels are not added to the displayed scene while the gate is closed. This also covers cached route layers revealed by pop.
+3. The native method reply opens the gate only if it belongs to the latest policy request. An old acknowledgement cannot open a newer protected navigation after an intervening allowance request.
+4. Protection remains active while protected outgoing routes or interactive back gestures can reveal sensitive content.
+5. Before clearing `FLAG_SECURE`, the gate waits for an allowed frame to paint and for the Flutter engine to report its raster completion. This avoids clearing protection merely because an animation callback fired. Timing reports can be batched; allowance may therefore lag transition completion. While waiting, a cancellable retry requests another safe frame so an idle or dropped frame does not strand release. Missing reports retain protection; the retry never grants permission on a timeout.
+
+This guarantees that the supported Flutter subtree's first protected displayed frame is withheld until the native protection request succeeds. **NavigatorObserver alone does not provide this guarantee.** The root gate, acknowledged window policy, route visibility tracking and raster-completion release work together. Protection still relies on Android honoring FLAG_SECURE; emulator sampling is not a formal proof of every device's compositor behavior.
+
+Policy changes cannot retract screenshots or frames already produced while content was allowed. Await policy setters before introducing sensitive data into an otherwise unchanged route. A setter that enables screenshots can wait for a safe rasterized frame, including until foreground rendering resumes if the app is paused.
+
+## Native startup and lifecycle
+
+Both Dart and native defaults are blocked. Initialize before `runApp`. For the native launch window, apply protection before Flutter attachment in your Activity and use a non-sensitive splash theme:
 
 ```kotlin
 override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,51 +83,28 @@ override fun onCreate(savedInstanceState: Bundle?) {
 }
 ```
 
-The plugin owns this window flag. Do not independently clear it, and do not attach multiple policy engines to the same Activity. Other Activities/windows require their own protection.
+The example includes this one-time native setup. Kotlin applies policy on the main thread and reapplies the latest state when the same engine attaches to a recreated Activity. A new engine/process starts blocked; restore backend policy explicitly. Disposal leaves the last window secure and releases Activity references. The plugin owns the window flag; other code must not independently clear it.
 
-## Update the two policies
+Native failures keep the gate closed. Awaited setters propagate `PlatformException`; asynchronous navigation failures are reported through `FlutterError.reportError`. A successful subsequent policy request can recover the gate. Do not bypass the gate to display an error: use non-sensitive UI outside it if required. There is no automatic fail-open fallback.
 
-```dart
-await FlutterScreenProtection.setScreenshotsEnabled(response.screenshotsEnabled);
-await FlutterScreenProtection.setProtectedRoutes(['/account-details', '/transfer']);
-```
+## Navigation support and limits
 
-`false` blocks the whole window. `true` permits screenshots only when the visible route is known and unprotected. Route names are exact, case-sensitive matches; there is no prefix or wildcard matching. Unnamed routes (including unnamed dialogs), an empty navigator, and initialization are blocked. Nonopaque overlays cannot uncover a protected underlying route. Outgoing protected routes stay protected until their transition overlays have been removed. Runtime list updates also reevaluate outgoing routes.
+| Integration | Support |
+|---|---|
+| Navigator 1.0 named routes | Supported with the root builder and observer. Push/pop/replacement/removal, initial routes, system back and restorable named routes use the same gate. |
+| Custom routes | Qualified routes extend `TransitionRoute`, honor Flutter's animation/completion and opacity contracts, and provide stable RouteSettings names. Unnamed routes remain protected. Arbitrary non-transition overlays/custom route implementations are not qualified. |
+| Predictive back | Flutter transition routes that notify Navigator user-gesture callbacks are supported, including cancellation. For Android predictive animations configure `PredictiveBackPageTransitionsBuilder` centrally and enable the Android back callback as required by your Flutter/Android configuration. Native progress events require supported Android versions (API 34+); ordinary back continues to work on older APIs. |
+| Navigator 2.0 | Wrap the root Navigator with the builder and attach its observer. Pages must expose stable `name` values. Change Page identity/key when its policy identity changes; renaming the same Route in place is not an observer notification. Arbitrary RouterDelegates are not automatically supported. |
+| go_router | Use `MaterialApp.router.builder` for the gate, root router `observers` for the observer, and centrally supplied named Pages (for example `MaterialPage(key: state.pageKey, name: '/transfer', child: ...)`). URI paths and GoRoute names are not assumed to be RouteSettings names. This is a supported integration contract, not a claim that every router configuration/version is verified. |
+| Nested Navigators / ShellRoute branches | Their route state is not automatically aggregated. Keep global screenshots disabled for that UI, or protect the entire containing root route. Do not attach the singleton observer to multiple Navigators. |
+| Native platform views / separate windows | The paint gate does not control independently composited native surfaces, additional Activities, or UI outside its subtree. Keep those windows secure before creating sensitive native content; the automatic Flutter first-paint guarantee does not cover them. |
 
-| Global enabled | Route | Result |
-|---|---|---|
-| false | any | Blocked |
-| true | `/home` (unprotected) | Allowed |
-| true | `/transfer` (protected) | Blocked |
-| true | unnamed / unknown | Blocked |
+The emulator matrix qualifies Navigator 1.0 on one engine. Navigator 2.0 and go_router are documented integration contracts, not separately qualified router applications. Multiple engines sharing a window are outside this contract.
 
-All setters return a Future that acknowledges native application (or storage while an Activity is temporarily detached). Await it before presenting newly sensitive content. Failures propagate as platform errors. Observer-triggered errors are reported via `FlutterError.reportError`; treat those as a protection failure, not permission to display sensitive data.
+The gate temporarily withholds the complete Flutter subtree; it is not a selective screenshot-masking API. There are no capture listeners, screenshot/recording detection features, or iOS implementation.
 
-## Navigation and first-frame protection
-
-Register the singleton observer **once on one root Navigator**, before its initial route. Standard named push, pop, replacement, removal, back navigation and restored routes are tracked. Names must be supplied in `RouteSettings` for manually constructed routes.
-
-An observer callback is synchronous; a platform-channel window update is asynchronous. Observer registration alone cannot guarantee that Android has acknowledged protection before the first frame of a newly pushed sensitive route. For that guarantee, wrap navigation from an allowed screen:
-
-```dart
-await FlutterScreenProtection.protectNavigation(() {
-  Navigator.of(context).pushNamed('/transfer');
-});
-```
-
-The guard waits for native blocking before invoking the synchronous navigation callback, and holds protection through the next frame. Do not make that callback async or await the Navigator's returned pop future. Use the guard for deep links, replacements, route-list additions before revealing sensitive content, and programmatic changes that introduce sensitive UI. The example uses it for every push. If callers cannot guard navigation, keep global screenshots disabled. For a system-back gesture that reveals a protected route underneath an allowed route, intercept back navigation in the application (for example with PopScope) and use the guard, or keep global protection enabled. An observer alone cannot synchronously block that first reveal frame. Already-protected screens remain secure during pops; outgoing transition tracking prevents early clearing.
-
-For Navigator 2.0 use stable `Page(key: ValueKey('/transfer'), name: '/transfer', ...)` identifiers and install the observer on that Navigator. For `go_router`, provide `MaterialPage(key: ValueKey('/transfer'), name: '/transfer', child: ...)` from `pageBuilder` and attach the observer through the router's observer configuration. Change the Page key when its policy identity changes; mutating only a name on the same route is not a navigation notification. Guard `router.go(...)` before changing pages. Do not assume URL paths or GoRoute names are automatically exposed as `RouteSettings.name`. Nested Navigators / ShellRoute branches are not automatically aggregated: supply navigation through a single observed root with stable names, or keep global protection enabled. This package does not discover nested navigation state.
-
-## Lifecycle and platform limits
-
-Kotlin applies window operations on the main thread. Ordered channel messages carry the complete effective Boolean, so backend and route updates cannot independently clear each other's restrictions. The latest policy is retained across temporary Activity detach/reattach for the same Flutter engine. Engine disposal leaves the last window secure and releases Activity references. A new engine or process starts blocked; restore backend policy explicitly after startup. Flutter's route restoration must provide stable route names.
-
-`FLAG_SECURE` prevents the window from appearing in screenshots and non-secure displays; capture paths can refuse capture or return blank content. It is whole-window protection, not screenshot detection or selective masking. It is not protection against cameras, compromised/rooted systems, or every OEM bug. ADB screencap and System UI screenshots are separate validation paths.
-
-- [Android FLAG_SECURE documentation](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#FLAG_SECURE)
-- [Flutter NavigatorObserver documentation](https://api.flutter.dev/flutter/widgets/NavigatorObserver-class.html)
-- [Example](example/lib/main.dart)
-- [Validation report](docs/VERIFICATION.md)
-
-This is a breaking rebuild. All old capture events, monitoring, selective-content APIs and iOS support have been removed. Historical research in `docs/archive` is not current functionality.
+- [Example root setup](example/lib/main.dart)
+- [Automatic navigation results](docs/AUTOMATIC_ROUTE_PROTECTION.md)
+- [Previous rebuild baseline](docs/VERIFICATION.md)
+- [Android FLAG_SECURE](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#FLAG_SECURE)
+- [Flutter NavigatorObserver](https://api.flutter.dev/flutter/widgets/NavigatorObserver-class.html)

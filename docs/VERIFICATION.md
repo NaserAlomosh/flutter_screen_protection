@@ -1,5 +1,7 @@
 # Android rebuild verification
 
+Historical rebuild baseline. The navigation integration described here is superseded by [automatic root protection](AUTOMATIC_ROUTE_PROTECTION.md); the current root integration does not require per-call navigation guards.
+
 Completed 14–15 November 2026 (Asia/Amman): all nine API levels 29–37 executed, with 225/225 recorded emulator checks PASS. No commit, push, merge or publication is part of this task.
 
 ## Scope and recovery

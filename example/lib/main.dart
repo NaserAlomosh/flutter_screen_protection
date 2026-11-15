@@ -37,6 +37,7 @@ class _ProtectionExampleState extends State<ProtectionExample> {
   @override
   Widget build(BuildContext context) => MaterialApp(
     restorationScopeId: 'example',
+    builder: FlutterScreenProtection.builder,
     navigatorObservers: [FlutterScreenProtection.navigatorObserver],
     initialRoute: '/home',
     onGenerateRoute: (settings) => MaterialPageRoute<void>(
@@ -83,11 +84,7 @@ class _ProtectionExampleState extends State<ProtectionExample> {
               '/transactions',
             ])
               ElevatedButton(
-                onPressed: () => update(
-                  () => FlutterScreenProtection.protectNavigation(() {
-                    Navigator.of(context).restorablePushNamed(route);
-                  }),
-                ),
+                onPressed: () => Navigator.pushNamed(context, route),
                 child: Text('Open $route'),
               ),
             Text(

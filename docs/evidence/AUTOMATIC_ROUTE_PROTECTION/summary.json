@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-15",
+  "apkSha256": "7c1a6d86f7fcd08610c886b5164724f1d0be626532b2e3257ced617e366c9a56",
+  "apis": [
+    {
+      "api": 29,
+      "checks": 47,
+      "transitionSamples": 15,
+      "status": "PASS",
+      "osPredictive": "Not applicable"
+    },
+    {
+      "api": 30,
+      "checks": 47,
+      "transitionSamples": 15,
+      "status": "PASS",
+      "osPredictive": "Not applicable"
+    },
+    {
+      "api": 31,
+      "checks": 47,
+      "transitionSamples": 15,
+      "status": "PASS",
+      "osPredictive": "Not applicable"
+    },
+    {
+      "api": 32,
+      "checks": 47,
+      "transitionSamples": 15,
+      "status": "PASS",
+      "osPredictive": "Not applicable"
+    },
+    {
+      "api": 33,
+      "checks": 47,
+      "transitionSamples": 15,
+      "status": "PASS",
+      "osPredictive": "Not applicable"
+    },
+    {
+      "api": 34,
+      "checks": 58,
+      "transitionSamples": 21,
+      "status": "PASS",
+      "osPredictive": "PASS"
+    },
+    {
+      "api": 35,
+      "checks": 58,
+      "transitionSamples": 21,
+      "status": "PASS",
+      "osPredictive": "PASS"
+    },
+    {
+      "api": 36,
+      "checks": 58,
+      "transitionSamples": 21,
+      "status": "PASS",
+      "osPredictive": "PASS"
+    },
+    {
+      "api": 37,
+      "checks": 58,
+      "transitionSamples": 21,
+      "status": "PASS",
+      "osPredictive": "PASS"
+    }
+  ],
+  "totalChecks": 467,
+  "transitionSamples": 159,
+  "gateSamples": 81,
+  "flutterTests": 13,
+  "exampleTests": 1,
+  "kotlinTests": 2
+}

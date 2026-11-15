@@ -1,0 +1,38 @@
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+11-15 09:12:29.548   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:29.548  4681  4681 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:45.274   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:45.274  5562  5562 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:49.705   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:49.706  5626  5626 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:49.908   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:49.908  5268  5268 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:08.595   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:08.595  5730  5730 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:12.925   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:12.926  5768  5768 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:21.069   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:21.069  5891  5891 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:23.631   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:23.632  5908  5908 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:36.473   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:36.473  6212  6212 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:36.572   344   344 W SurfaceFlinger: couldn't log to binary event log: overflow.
+11-15 09:13:38.630   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:38.631  6239  6239 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:40.286   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:40.287  6286  6286 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:41.496   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:41.497  6311  6311 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:54.375   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:54.375  6409  6409 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:54.670   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:54.671  6425  6425 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:54.967   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:54.967  6438  6438 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:13:55.227   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:13:55.228  6453  6453 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:14:13.109   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:14:13.110  6520  6520 E SurfaceFlinger: captureScreen failed to readInt32: -1

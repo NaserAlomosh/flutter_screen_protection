@@ -1,0 +1,14 @@
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+11-15 09:12:29.548   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:29.548  4681  4681 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:32.641  5268  5268 V GlobalScreenshot: clearing screenshot: new screenshot requested
+11-15 09:12:39.228  5268  5268 V GlobalScreenshot: clearing screenshot: timeout
+11-15 09:12:45.274   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:45.274  5562  5562 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:49.705   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:49.706  5626  5626 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:49.908   344   344 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-15 09:12:49.908  5268  5268 E SurfaceFlinger: captureScreen failed to readInt32: -1
+11-15 09:12:49.908  5268  5268 V GlobalScreenshot: clearing screenshot: new screenshot requested

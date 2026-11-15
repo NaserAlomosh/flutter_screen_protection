@@ -1,0 +1,47 @@
+--------- beginning of main
+11-15 10:15:11.876  3979  4130 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(104)] Using the Impeller rendering backend (OpenGLES).
+11-15 10:15:12.129  3979  4191 I flutter : The Dart VM service is listening on http://127.0.0.1:37931/zOO5w8xVLJ4=/
+11-15 10:15:12.397  3979  3979 I flutter : 00:00 +0: Automatic navigation screenshot matrix
+11-15 10:15:13.773  3979  3979 I flutter : FSP_EVIDENCE startup BLOCKED
+11-15 10:15:16.683  3979  3979 I flutter : FSP_EVIDENCE global_enabled_home ALLOWED
+11-15 10:15:29.666  3979  3979 I flutter : FSP_EVIDENCE global_disabled BLOCKED
+11-15 10:15:32.629  3979  3979 I flutter : FSP_EVIDENCE backend_reenabled ALLOWED
+11-15 10:15:35.269  3979  3979 I flutter : FSP_EVIDENCE protected_transfer BLOCKED
+11-15 10:15:48.074  3979  3979 I flutter : FSP_EVIDENCE pop_home ALLOWED
+11-15 10:15:51.086  3979  3979 I flutter : FSP_EVIDENCE system_back ALLOWED
+11-15 10:15:54.582  3979  3979 I flutter : FSP_EVIDENCE route_list_add BLOCKED
+11-15 10:15:56.633  3979  3979 I flutter : FSP_EVIDENCE route_list_remove ALLOWED
+11-15 10:15:59.150  3979  3979 I flutter : FSP_EVIDENCE replacement_protected BLOCKED
+11-15 10:16:01.249  3979  3979 I flutter : FSP_EVIDENCE remove_until_home ALLOWED
+11-15 10:16:04.638  3979  3979 I flutter : FSP_EVIDENCE remove_route ALLOWED
+11-15 10:16:07.654  3979  3979 I flutter : FSP_EVIDENCE unnamed BLOCKED
+11-15 10:16:10.300  3979  3979 I flutter : FSP_EVIDENCE global_precedence_rapid_navigation BLOCKED
+11-15 10:16:12.241  3979  3979 I flutter : FSP_EVIDENCE rapid_updates_final_allowed ALLOWED
+11-15 10:16:14.499  3979  3979 I flutter : FSP_EVIDENCE lifecycle_allowed ALLOWED
+11-15 10:16:23.533  3979  3979 I flutter : FSP_EVIDENCE lifecycle_secure BLOCKED
+11-15 10:16:30.516  3979  3979 I flutter : FSP_EVIDENCE automatic_home ALLOWED
+11-15 10:16:32.673  3979  3979 I flutter : FSP_TRANSITION delayed_push_first_frames GATED
+11-15 10:16:42.600  3979  3979 I flutter : FSP_EVIDENCE delayed_push_acknowledged BLOCKED
+11-15 10:16:44.365  3979  3979 I flutter : FSP_TRANSITION protected_to_allowed_push SECURE
+11-15 10:16:50.387  3979  3979 I flutter : FSP_EVIDENCE allowed_after_transition ALLOWED
+11-15 10:16:52.651  3979  3979 I flutter : FSP_TRANSITION delayed_pop_cached_protected GATED
+11-15 10:17:01.732  3979  3979 I flutter : FSP_EVIDENCE cached_protected_acknowledged BLOCKED
+11-15 10:17:03.418  3979  3979 I flutter : FSP_TRANSITION protected_pop_to_home SECURE
+11-15 10:17:09.516  3979  3979 I flutter : FSP_EVIDENCE home_after_pop_transition ALLOWED
+11-15 10:17:17.882  3979  3979 I flutter : FSP_TRANSITION native_failure_gate GATED
+11-15 10:17:20.682  3979  3979 I flutter : FSP_EVIDENCE native_failure_retry BLOCKED
+11-15 10:17:28.451  3979  3979 I flutter : FSP_EVIDENCE before_predictive ALLOWED
+11-15 10:17:30.704  3979  3979 I flutter : FSP_TRANSITION predictive_progress_native_callback SECURE
+11-15 10:17:33.984  3979  3979 I flutter : FSP_EVIDENCE predictive_cancel ALLOWED
+11-15 10:17:42.366  3979  3979 I flutter : FSP_EVIDENCE predictive_commit BLOCKED
+11-15 10:17:50.133  3979  3979 I flutter : FSP_EVIDENCE before_os_predictive ALLOWED
+11-15 10:17:52.342  3979  3979 I flutter : FSP_TRANSITION os_predictive_back GESTURE
+11-15 10:17:53.483  3979  3979 I flutter : Some possible finders for the widgets at Offset(0.8, 342.9):
+11-15 10:17:53.484  3979  3979 I flutter :   find.byType(NotificationListener<LayoutChangedNotification>)
+11-15 10:17:53.484  3979  3979 I flutter :   find.byType(PhysicalModel)
+11-15 10:17:53.484  3979  3979 I flutter :   find.byType(AnimatedPhysicalModel)
+11-15 10:17:53.484  3979  3979 I flutter :   find.byType(Material)
+11-15 10:17:53.485  3979  3979 I flutter :   find.byType(NotificationListener<ScrollNotification>)
+11-15 10:17:53.489  3979  3979 I flutter :   find.byElementType(InheritedModelElement<_ModalRouteAspect>)
+11-15 10:17:53.492  3979  3979 I flutter :   find.byElementType(InheritedModelElement<Object>)
+11-15 10:17:53.494  3979  3979 I flutter : FSP_OS_GESTURE_STARTED
