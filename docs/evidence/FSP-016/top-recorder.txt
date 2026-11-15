@@ -1,0 +1,6 @@
+11-09 14:03:04.533 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showSoundSettingSuggestionPopup
+11-09 14:03:06.926 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditionsThenStartRecording
+11-09 14:03:06.926 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditions
+11-09 14:03:06.940 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showErrorToast:-50004
+11-09 14:03:06.943 13477 13477 E [SC_ScreenRecorder]_ScreenRecorderController: Secure layer detected. Screenshot failed
+11-09 14:03:06.956 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: unregisterExternalEventDetector

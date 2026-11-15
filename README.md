@@ -1,28 +1,84 @@
-# Flutter Screen Protection
+# flutter_screen_protection
 
-An Android and iOS Flutter plugin project for privacy-sensitive screens in banking, fintech, and other apps. The goal is to help apps respond to capture signals and hide selected fields while keeping the rest of the interface usable.
+Android-only Flutter screenshot protection using `WindowManager.LayoutParams.FLAG_SECURE`.
+Exactly two policies: a global backend-supplied Boolean and a configurable set of protected route names. Android minimum API 29; validation targets API 29–37. See [verification](docs/VERIFICATION.md) for executed results, not a blanket device compatibility claim.
 
-**Development status** — The `0.0.1` project includes the Dart capture contracts, channel adapter, controller, and `getPlatformVersion()`. Android screenshot observation is implemented for API 34+ and is undergoing runtime qualification. Continuous capture detection, widget rendering, and window privacy remain planned.
+## Initialize before showing content
 
-| Capability | Android | iOS |
-| --- | --- | --- |
-| Screenshot notification | Android 14+ for supported screenshot gestures | iOS 15+ target |
-| Live capture state | Android 15+ reports app visibility in recording | iOS 15+ target, with scene-scoped detection from iOS 17 |
-| Mask, blur, or replace selected Flutter content | Yes, with configurable fallback | Yes, with configurable fallback |
-| Optional window and app-switcher privacy | Secure window and supported Recents controls | Background snapshot overlay |
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_screen_protection/flutter_screen_protection.dart';
 
-Screenshot notifications arrive after capture. Reactive masking can take effect only after the signal reaches Flutter and a frame renders. Blur can leave data recognizable. Apps that need to keep a value out of captured output should keep it off the screen or use a separately validated platform control where available. See [security limitations](docs/SECURITY_LIMITATIONS.md).
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterScreenProtection.initialize(
+    screenshotsEnabled: false,
+    protectedRoutes: ['/login', '/account-details', '/transfer', '/card-details'],
+  );
+  runApp(MaterialApp(
+    navigatorObservers: [FlutterScreenProtection.navigatorObserver],
+    initialRoute: '/home',
+    routes: {/* your named routes */},
+  ));
+}
+```
 
-## Dart capture API
+Both native and Dart state start blocked. Until the observer knows a named route, protection remains on. `initialize` may be repeated to replace both configurations; it does not reset navigation. The plugin does not fetch backend configuration or persist it across process death.
 
-`FlutterScreenProtectionController` exposes current capture state, independent screenshot and continuous-capture capabilities, and a broadcast stream of typed events. The controller starts in `CaptureStatus.unknown` and uses an ordered snapshot to synchronize with the Android screenshot adapter. Hosts can inspect or remove the Android detection permission through manifest merging. The test fake can exercise the full Dart capture contract. See the [API design](docs/API_DESIGN.md) for the public contracts and native wire protocol.
+For protection **before plugin attachment**, add this to your Android FlutterActivity. It also protects the native launch window. Use a non-sensitive launch theme/splash:
 
-## Project documentation
+```kotlin
+override fun onCreate(savedInstanceState: Bundle?) {
+    window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+    super.onCreate(savedInstanceState)
+}
+```
 
-- [Requirements](PROJECT_REQUIREMENTS.md), [implementation roadmap](IMPLEMENTATION_MASTER_PLAN.md), and [engineering backlog](TASKS.md)
-- [Repository audit and architecture](docs/ARCHITECTURE.md), [API design](docs/API_DESIGN.md), and [decision register](docs/DECISION_REGISTER.md)
-- [Platform compatibility](docs/PLATFORM_COMPATIBILITY.md), [security limitations](docs/SECURITY_LIMITATIONS.md), [testing strategy](docs/TESTING_STRATEGY.md), and [release plan](docs/RELEASE_PLAN.md)
+The plugin owns this window flag. Do not independently clear it, and do not attach multiple policy engines to the same Activity. Other Activities/windows require their own protection.
 
-## Contributing
+## Update the two policies
 
-Review the roadmap and decision register before starting implementation. Reference the relevant requirement and task in proposed changes. Use synthetic fixtures and record device, OS build, and capture method for platform evidence. The license is currently a placeholder and must be resolved before distribution.
+```dart
+await FlutterScreenProtection.setScreenshotsEnabled(response.screenshotsEnabled);
+await FlutterScreenProtection.setProtectedRoutes(['/account-details', '/transfer']);
+```
+
+`false` blocks the whole window. `true` permits screenshots only when the visible route is known and unprotected. Route names are exact, case-sensitive matches; there is no prefix or wildcard matching. Unnamed routes (including unnamed dialogs), an empty navigator, and initialization are blocked. Nonopaque overlays cannot uncover a protected underlying route. Outgoing protected routes stay protected until their transition overlays have been removed. Runtime list updates also reevaluate outgoing routes.
+
+| Global enabled | Route | Result |
+|---|---|---|
+| false | any | Blocked |
+| true | `/home` (unprotected) | Allowed |
+| true | `/transfer` (protected) | Blocked |
+| true | unnamed / unknown | Blocked |
+
+All setters return a Future that acknowledges native application (or storage while an Activity is temporarily detached). Await it before presenting newly sensitive content. Failures propagate as platform errors. Observer-triggered errors are reported via `FlutterError.reportError`; treat those as a protection failure, not permission to display sensitive data.
+
+## Navigation and first-frame protection
+
+Register the singleton observer **once on one root Navigator**, before its initial route. Standard named push, pop, replacement, removal, back navigation and restored routes are tracked. Names must be supplied in `RouteSettings` for manually constructed routes.
+
+An observer callback is synchronous; a platform-channel window update is asynchronous. Observer registration alone cannot guarantee that Android has acknowledged protection before the first frame of a newly pushed sensitive route. For that guarantee, wrap navigation from an allowed screen:
+
+```dart
+await FlutterScreenProtection.protectNavigation(() {
+  Navigator.of(context).pushNamed('/transfer');
+});
+```
+
+The guard waits for native blocking before invoking the synchronous navigation callback, and holds protection through the next frame. Do not make that callback async or await the Navigator's returned pop future. Use the guard for deep links, replacements, route-list additions before revealing sensitive content, and programmatic changes that introduce sensitive UI. The example uses it for every push. If callers cannot guard navigation, keep global screenshots disabled. For a system-back gesture that reveals a protected route underneath an allowed route, intercept back navigation in the application (for example with PopScope) and use the guard, or keep global protection enabled. An observer alone cannot synchronously block that first reveal frame. Already-protected screens remain secure during pops; outgoing transition tracking prevents early clearing.
+
+For Navigator 2.0 use stable `Page(key: ValueKey('/transfer'), name: '/transfer', ...)` identifiers and install the observer on that Navigator. For `go_router`, provide `MaterialPage(key: ValueKey('/transfer'), name: '/transfer', child: ...)` from `pageBuilder` and attach the observer through the router's observer configuration. Change the Page key when its policy identity changes; mutating only a name on the same route is not a navigation notification. Guard `router.go(...)` before changing pages. Do not assume URL paths or GoRoute names are automatically exposed as `RouteSettings.name`. Nested Navigators / ShellRoute branches are not automatically aggregated: supply navigation through a single observed root with stable names, or keep global protection enabled. This package does not discover nested navigation state.
+
+## Lifecycle and platform limits
+
+Kotlin applies window operations on the main thread. Ordered channel messages carry the complete effective Boolean, so backend and route updates cannot independently clear each other's restrictions. The latest policy is retained across temporary Activity detach/reattach for the same Flutter engine. Engine disposal leaves the last window secure and releases Activity references. A new engine or process starts blocked; restore backend policy explicitly after startup. Flutter's route restoration must provide stable route names.
+
+`FLAG_SECURE` prevents the window from appearing in screenshots and non-secure displays; capture paths can refuse capture or return blank content. It is whole-window protection, not screenshot detection or selective masking. It is not protection against cameras, compromised/rooted systems, or every OEM bug. ADB screencap and System UI screenshots are separate validation paths.
+
+- [Android FLAG_SECURE documentation](https://developer.android.com/reference/android/view/WindowManager.LayoutParams#FLAG_SECURE)
+- [Flutter NavigatorObserver documentation](https://api.flutter.dev/flutter/widgets/NavigatorObserver-class.html)
+- [Example](example/lib/main.dart)
+- [Validation report](docs/VERIFICATION.md)
+
+This is a breaking rebuild. All old capture events, monitoring, selective-content APIs and iOS support have been removed. Historical research in `docs/archive` is not current functionality.

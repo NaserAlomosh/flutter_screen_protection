@@ -1,0 +1,13 @@
+--------- beginning of main
+11-14 23:48:15.428  3515  3515 D Screenshot: Processing screenshot data
+11-14 23:48:15.473  3515  3515 D Screenshot: Executing screenshot for display 0
+11-14 23:48:15.496  3515  3515 D Screenshot: Screenshot request: ScreenshotData(type=1, source=2, userHandle=UserHandle{0}, topComponent=ComponentInfo{com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity}, screenBounds=Rect(0, 0 - 1080, 1920), taskId=8, insets=Insets{left=0, top=0, right=0, bottom=0}, bitmap=android.graphics.Bitmap@17414ba, displayId=0, contextUrl=null)
+11-14 23:48:15.518  3515  3546 D Screenshot: Inserted new URI: content://0@media/external/images/media/1000000017
+11-14 23:48:15.857  3515  3515 D Screenshot: Saved screenshot: Result{uri=content://0@media/external/images/media/1000000017, requestId=fada12d7-07c4-42fb-9afb-773ae5d2ce43, fileName='Screenshot_20261114-234815.png', timestamp=1794689295505, format=PNG, published=true}
+11-14 23:48:22.947  3515  3515 D Screenshot: finishDismiss
+11-14 23:48:22.947  3515  3515 D Screenshot: Finished waiting for id=0. onFinish id=0
+11-14 23:48:29.719  3515  3515 D Screenshot: Processing screenshot data
+11-14 23:48:29.728  3515  3515 D Screenshot: Executing screenshot for display 0
+11-14 23:48:29.736  3515  3515 D Screenshot: Screenshot request: ScreenshotData(type=1, source=2, userHandle=UserHandle{0}, topComponent=ComponentInfo{com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity}, screenBounds=Rect(0, 0 - 1080, 1920), taskId=8, insets=Insets{left=0, top=0, right=0, bottom=0}, bitmap=android.graphics.Bitmap@da612e1, displayId=0, contextUrl=null)
+11-14 23:48:29.775  3515  4058 D Screenshot: Inserted new URI: content://0@media/external/images/media/1000000020
+11-14 23:48:30.010  3515  3515 D Screenshot: Saved screenshot: Result{uri=content://0@media/external/images/media/1000000020, requestId=c3267e9e-f49a-4e31-8d85-e3089c3fd318, fileName='Screenshot_20261114-234829.png', timestamp=1794689309744, format=PNG, published=true}

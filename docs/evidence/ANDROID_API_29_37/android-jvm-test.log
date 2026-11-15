@@ -1,0 +1,38 @@
+> Task :gradle:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :gradle:compileKotlin UP-TO-DATE
+> Task :gradle:compileJava NO-SOURCE
+> Task :gradle:compileGroovy NO-SOURCE
+> Task :gradle:pluginDescriptors UP-TO-DATE
+> Task :gradle:processResources UP-TO-DATE
+> Task :gradle:classes UP-TO-DATE
+> Task :gradle:jar UP-TO-DATE
+> Task :flutter_screen_protection:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :flutter_screen_protection:preBuild UP-TO-DATE
+> Task :flutter_screen_protection:preDebugBuild UP-TO-DATE
+> Task :flutter_screen_protection:generateDebugResValues UP-TO-DATE
+> Task :flutter_screen_protection:generateDebugResources UP-TO-DATE
+> Task :flutter_screen_protection:packageDebugResources UP-TO-DATE
+> Task :flutter_screen_protection:parseDebugLocalResources UP-TO-DATE
+> Task :flutter_screen_protection:generateDebugRFile UP-TO-DATE
+> Task :flutter_screen_protection:compileDebugKotlin UP-TO-DATE
+> Task :flutter_screen_protection:javaPreCompileDebug UP-TO-DATE
+> Task :flutter_screen_protection:compileDebugJavaWithJavac NO-SOURCE
+> Task :flutter_screen_protection:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :flutter_screen_protection:preDebugUnitTestBuild UP-TO-DATE
+> Task :flutter_screen_protection:bundleLibRuntimeToJarDebug
+> Task :flutter_screen_protection:javaPreCompileDebugUnitTest
+> Task :flutter_screen_protection:processDebugJavaRes UP-TO-DATE
+> Task :flutter_screen_protection:generateDebugUnitTestStubRFile
+> Task :flutter_screen_protection:compileDebugUnitTestKotlin
+> Task :flutter_screen_protection:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :flutter_screen_protection:processDebugUnitTestJavaRes
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :flutter_screen_protection:testDebugUnitTest
+
+FlutterScreenProtectionPluginTest > backgroundCallsAreMarshalledInOrder() PASSED
+
+FlutterScreenProtectionPluginTest > policyLifecycleAndCleanup() PASSED
+
+BUILD SUCCESSFUL in 2s
+19 actionable tasks: 6 executed, 13 up-to-date

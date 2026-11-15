@@ -1,0 +1,10 @@
+--------- beginning of main
+11-15 00:11:34.443  2588  2588 D Screenshot: Processing screenshot data
+11-15 00:11:34.482  2588  2588 D Screenshot: Screenshot request: ScreenshotData(type=1, source=7, userHandle=UserHandle{0}, topComponent=ComponentInfo{com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity}, taskId=9, originalScreenBounds=Rect(0, 0 - 1080, 1920), originalInsets=Insets{left=0, top=0, right=0, bottom=0}, bitmap=android.graphics.Bitmap@dcfe3c0, displayId=0, customSaveUri=null, suppressLongScreenshot=false)
+11-15 00:11:34.491  2588  2630 D Screenshot: Inserted new URI: content://0@media/external/images/media/17
+11-15 00:11:34.601  2588  2588 D Screenshot: Saved screenshot: Result{uri=content://0@media/external/images/media/17, requestId=4445b7d3-3f22-4b76-b637-5707bd27f8e5, fileName='Screenshot_20261115-001134.png', timestamp=1794690694485, format=PNG}
+11-15 00:11:42.004  2588  2588 D Screenshot: finishDismiss
+11-15 00:11:47.822  2588  2588 D Screenshot: Processing screenshot data
+11-15 00:11:47.845  2588  2588 D Screenshot: Screenshot request: ScreenshotData(type=1, source=7, userHandle=UserHandle{0}, topComponent=ComponentInfo{com.naseralomosh.flutter_screen_protection_example/com.naseralomosh.flutter_screen_protection_example.ValidationActivity}, taskId=9, originalScreenBounds=Rect(0, 0 - 1080, 1920), originalInsets=Insets{left=0, top=0, right=0, bottom=0}, bitmap=android.graphics.Bitmap@28638cf, displayId=0, customSaveUri=null, suppressLongScreenshot=false)
+11-15 00:11:47.852  2588  2792 D Screenshot: Inserted new URI: content://0@media/external/images/media/18
+11-15 00:11:47.960  2588  2588 D Screenshot: Saved screenshot: Result{uri=content://0@media/external/images/media/18, requestId=16c2233e-da71-49df-84df-a1a93b4e9904, fileName='Screenshot_20261115-001147.png', timestamp=1794690707846, format=PNG}

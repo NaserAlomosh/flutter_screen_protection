@@ -1,0 +1,142 @@
+[
+  {
+    "test": "startup",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/startup.png'"
+  },
+  {
+    "test": "global_enabled_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.891707175925926,
+    "screenshot": "global_enabled_home.png"
+  },
+  {
+    "test": "global_enabled_home",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "NOT TESTED",
+    "newFiles": [],
+    "note": "Requires visual verification of saved image or refusal UI; ADB result is separate."
+  },
+  {
+    "test": "global_disabled",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/global_disabled.png'"
+  },
+  {
+    "test": "backend_reenabled",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.7082089120370371,
+    "screenshot": "backend_reenabled.png"
+  },
+  {
+    "test": "protected_transfer",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/protected_transfer.png'"
+  },
+  {
+    "test": "protected_transfer",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "NOT TESTED",
+    "newFiles": [],
+    "note": "Requires visual verification of saved image or refusal UI; ADB result is separate."
+  },
+  {
+    "test": "pop_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.7654774305555555,
+    "screenshot": "pop_home.png"
+  },
+  {
+    "test": "route_list_add",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/route_list_add.png'"
+  },
+  {
+    "test": "route_list_remove",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.891707175925926,
+    "screenshot": "route_list_remove.png"
+  },
+  {
+    "test": "replacement_protected",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/replacement_protected.png'"
+  },
+  {
+    "test": "remove_until_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.891707175925926,
+    "screenshot": "remove_until_home.png"
+  },
+  {
+    "test": "remove_route",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.891707175925926,
+    "screenshot": "remove_route.png"
+  },
+  {
+    "test": "unnamed",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/unnamed.png'"
+  },
+  {
+    "test": "global_precedence_rapid_navigation",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/global_precedence_rapid_navigation.png'"
+  },
+  {
+    "test": "rapid_updates_final_allowed",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.891707175925926,
+    "screenshot": "rapid_updates_final_allowed.png"
+  },
+  {
+    "test": "lifecycle_secure",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/lifecycle_secure.png'"
+  },
+  {
+    "test": "activity_recreation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.0,
+    "screenshot": "activity_recreation.png"
+  },
+  {
+    "test": "background_foreground",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.0,
+    "screenshot": "background_foreground.png"
+  },
+  {
+    "test": "orientation",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-29/orientation.png'"
+  }
+]

@@ -1,0 +1,3 @@
+--------- beginning of main
+11-14 22:40:15.709   206   206 W SurfaceFlinger: FB is protected: PERMISSION_DENIED
+11-14 22:40:15.709  5177  5177 E SurfaceFlinger: captureScreen failed to readInt32: -1

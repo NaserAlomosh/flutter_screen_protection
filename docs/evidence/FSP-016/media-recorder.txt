@@ -1,0 +1,18 @@
+11-09 14:01:50.394 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showSoundSettingSuggestionPopup
+11-09 14:01:58.049 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditionsThenStartRecording
+11-09 14:01:58.049 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditions
+11-09 14:01:58.063 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showErrorToast:-50004
+11-09 14:01:58.067 13477 13477 E [SC_ScreenRecorder]_ScreenRecorderController: Secure layer detected. Screenshot failed
+11-09 14:01:58.079 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: unregisterExternalEventDetector
+11-09 14:02:37.515 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: ManualStart = false
+11-09 14:02:37.517 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: FocusedUserId = 0
+11-09 14:02:37.518 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: registerExternalEventDetector
+11-09 14:02:37.521 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: setAction
+11-09 14:02:37.521 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: setAction, action is com.samsung.android.app.screenrecorder.ACTION_START
+11-09 14:02:37.521 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: setAction: ACTION_START
+11-09 14:02:37.521 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showSoundSettingSuggestionPopup
+11-09 14:02:39.934 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditionsThenStartRecording
+11-09 14:02:39.934 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: checkPreConditions
+11-09 14:02:39.947 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: showErrorToast:-50004
+11-09 14:02:39.950 13477 13477 E [SC_ScreenRecorder]_ScreenRecorderController: Secure layer detected. Screenshot failed
+11-09 14:02:39.962 13477 13477 I [SC_ScreenRecorder]_ScreenRecorderController: unregisterExternalEventDetector

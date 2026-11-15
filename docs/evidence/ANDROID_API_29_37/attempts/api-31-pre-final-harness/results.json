@@ -1,0 +1,222 @@
+[
+  {
+    "test": "startup",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "global_enabled_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.8917110339506172,
+    "screenshot": "global_enabled_home.png"
+  },
+  {
+    "test": "global_enabled_home",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "NOT TESTED",
+    "newFiles": [
+      "/sdcard/Pictures/Screenshots/Screenshot_20261114-224047.png"
+    ],
+    "note": "Requires visual verification of saved image or refusal UI; ADB result is separate."
+  },
+  {
+    "test": "global_disabled",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "backend_reenabled",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.7089597800925926,
+    "screenshot": "backend_reenabled.png"
+  },
+  {
+    "test": "protected_transfer",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "protected_transfer",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "NOT TESTED",
+    "newFiles": [
+      "/sdcard/Pictures/Screenshots/Screenshot_20261114-224052.png"
+    ],
+    "note": "Requires visual verification of saved image or refusal UI; ADB result is separate."
+  },
+  {
+    "test": "pop_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.6768190586419753,
+    "screenshot": "pop_home.png"
+  },
+  {
+    "test": "system_back",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-31/system_back.png'"
+  },
+  {
+    "test": "route_list_add",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "route_list_remove",
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "error": "cannot identify image file '/Users/apple/Desktop/flutter_screen_protection/docs/evidence/ANDROID_API_29_37/api-31/route_list_remove.png'"
+  },
+  {
+    "test": "replacement_protected",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "remove_until_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.8917110339506172,
+    "screenshot": "remove_until_home.png"
+  },
+  {
+    "test": "remove_route",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.8917110339506172,
+    "screenshot": "remove_route.png"
+  },
+  {
+    "test": "unnamed",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "global_precedence_rapid_navigation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "rapid_updates_final_allowed",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.8917110339506172,
+    "screenshot": "rapid_updates_final_allowed.png"
+  },
+  {
+    "test": "lifecycle_allowed",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "markerFraction": 0.8917110339506172,
+    "screenshot": "lifecycle_allowed.png"
+  },
+  {
+    "test": "lifecycle_allowed_activity_recreation",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_allowed_activity_recreation.png"
+  },
+  {
+    "test": "lifecycle_allowed_background_foreground",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_allowed_background_foreground.png"
+  },
+  {
+    "test": "lifecycle_allowed_orientation",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_allowed_orientation.png"
+  },
+  {
+    "test": "lifecycle_secure",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "lifecycle_secure_activity_recreation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "captureRefused": false,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "lifecycle_secure_background_foreground",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "captureRefused": true,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  },
+  {
+    "test": "lifecycle_secure_orientation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "FAIL",
+    "captureRefused": false,
+    "secureWindow": true,
+    "stderr": "",
+    "exitCode": 0
+  }
+]

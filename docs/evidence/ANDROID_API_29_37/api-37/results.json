@@ -1,0 +1,227 @@
+[
+  {
+    "test": "startup",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "startup.png"
+  },
+  {
+    "test": "global_enabled_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9206288580246914,
+    "screenshot": "global_enabled_home.png"
+  },
+  {
+    "test": "global_enabled_home",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "PASS",
+    "newFiles": [
+      "/sdcard/Pictures/Screenshots/Screenshot_20261115-001134.png"
+    ],
+    "note": "Saved-image pixels or explicit secure capture refusal log; otherwise BLOCKED/inconclusive."
+  },
+  {
+    "test": "global_disabled",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "global_disabled.png"
+  },
+  {
+    "test": "backend_reenabled",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207325424382716,
+    "screenshot": "backend_reenabled.png"
+  },
+  {
+    "test": "protected_transfer",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "protected_transfer.png"
+  },
+  {
+    "test": "protected_transfer",
+    "method": "System UI KEYCODE_SYSRQ",
+    "status": "PASS",
+    "newFiles": [
+      "/sdcard/Pictures/Screenshots/Screenshot_20261115-001147.png"
+    ],
+    "note": "Saved-image pixels or explicit secure capture refusal log; otherwise BLOCKED/inconclusive."
+  },
+  {
+    "test": "pop_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207325424382716,
+    "screenshot": "pop_home.png"
+  },
+  {
+    "test": "system_back",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "system_back.png"
+  },
+  {
+    "test": "route_list_add",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "route_list_add.png"
+  },
+  {
+    "test": "route_list_remove",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "route_list_remove.png"
+  },
+  {
+    "test": "replacement_protected",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "replacement_protected.png"
+  },
+  {
+    "test": "remove_until_home",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "remove_until_home.png"
+  },
+  {
+    "test": "remove_route",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "remove_route.png"
+  },
+  {
+    "test": "unnamed",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "unnamed.png"
+  },
+  {
+    "test": "global_precedence_rapid_navigation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "global_precedence_rapid_navigation.png"
+  },
+  {
+    "test": "rapid_updates_final_allowed",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "rapid_updates_final_allowed.png"
+  },
+  {
+    "test": "lifecycle_allowed",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "lifecycle_allowed.png"
+  },
+  {
+    "test": "lifecycle_allowed_activity_recreation",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "lifecycle_allowed_activity_recreation.png"
+  },
+  {
+    "test": "lifecycle_allowed_background_foreground",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9207016782407408,
+    "screenshot": "lifecycle_allowed_background_foreground.png"
+  },
+  {
+    "test": "lifecycle_allowed_orientation",
+    "expectedBlocked": false,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.9246117862654321,
+    "screenshot": "lifecycle_allowed_orientation.png"
+  },
+  {
+    "test": "lifecycle_secure",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_secure.png"
+  },
+  {
+    "test": "lifecycle_secure_activity_recreation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_secure_activity_recreation.png"
+  },
+  {
+    "test": "lifecycle_secure_background_foreground",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_secure_background_foreground.png"
+  },
+  {
+    "test": "lifecycle_secure_orientation",
+    "expectedBlocked": true,
+    "method": "adb-screencap",
+    "status": "PASS",
+    "foreground": true,
+    "markerFraction": 0.0,
+    "screenshot": "lifecycle_secure_orientation.png"
+  }
+]
