@@ -1,2 +1,0 @@
---------- beginning of main
-11-14 22:41:04.229   361   361 W SurfaceFlinger: FB is protected: PERMISSION_DENIED

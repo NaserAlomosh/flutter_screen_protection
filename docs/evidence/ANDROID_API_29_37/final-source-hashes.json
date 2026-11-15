@@ -1,7 +1,0 @@
-{
-  "lib/flutter_screen_protection.dart": "c5f737d293d5329736efc116ae1bdeeef6e0a228bfad1136c9ec6b516a0273d2",
-  "android/src/main/kotlin/com/naseralomosh/flutter_screen_protection/FlutterScreenProtectionPlugin.kt": "e5bd8e0ed223f257ac75cfd8c31dfec935e7005ca7f2c1ac1959ccbaa641677b",
-  "example/integration_test/policy_test.dart": "f5a5e300323a3d0808af7ac26c5e33b7f6228eb888e6f9a9af36537ef27b7a09",
-  "tool/validate_android.py": "309b174ec86bb9e99e3a87846f44b4720637329b464afe387dd4760ac4d290b1",
-  "pubspec.yaml": "9d115c918b0c1ad3719f7a6fb39408939cfae4f73eda59466a03457f77ae507f"
-}

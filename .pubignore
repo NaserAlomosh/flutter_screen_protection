@@ -40,3 +40,7 @@ tool/
 **/build/
 **/.gradle/
 **/local.properties
+
+# Local editor settings and example validation output
+.vscode/
+example/flutter_*.log

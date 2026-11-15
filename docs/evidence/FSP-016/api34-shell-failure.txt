@@ -1,1 +1,0 @@
-API 34: exec-out screencap -p returned empty output for default, media, and top. Direct shell screencap -p /sdcard/fsp016-api34-top.png also created a zero-byte file. No stderr detail. System UI saved PNGs succeeded for default/top. Cause UNVERIFIED.
